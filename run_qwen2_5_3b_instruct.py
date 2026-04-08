@@ -1,4 +1,5 @@
 import argparse
+import getpass
 import os
 import shutil
 import sys
@@ -105,9 +106,8 @@ def generate(
     return tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
 
 
-def generate_remote(model_id: str, prompt: str, max_new_tokens: int, temperature: float, top_p: float) -> str:
-    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN")
-    client = InferenceClient(model=model_id, token=token)
+def generate_remote(model_id: str, prompt: str, max_new_tokens: int, temperature: float, top_p: float, token: str) -> str:
+    client = InferenceClient(model=model_id, token=token or None)
     messages = [{"role": "user", "content": prompt}]
 
     if hasattr(client, "chat") and hasattr(client.chat, "completions"):
@@ -135,6 +135,7 @@ def main() -> None:
     parser.add_argument("--device", default=os.environ.get("QWEN_DEVICE", ""))
     parser.add_argument("--dtype", default=os.environ.get("QWEN_DTYPE", ""))
     parser.add_argument("--cache-dir", default=os.environ.get("QWEN_CACHE_DIR", ""))
+    parser.add_argument("--hf-token", default=os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN") or "")
     parser.add_argument("--prompt", default="Say hello in one sentence.")
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--temperature", type=float, default=0.7)
@@ -143,12 +144,16 @@ def main() -> None:
 
     if args.backend == "remote":
         try:
+            token = args.hf_token
+            if not token:
+                token = getpass.getpass("Hugging Face token (input hidden): ").strip()
             text = generate_remote(
                 model_id=args.model,
                 prompt=args.prompt,
                 max_new_tokens=args.max_new_tokens,
                 temperature=args.temperature,
                 top_p=args.top_p,
+                token=token,
             )
             print(text)
             return
