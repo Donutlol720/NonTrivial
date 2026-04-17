@@ -10,6 +10,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-4B-Instruct-2507"
+DEFAULT_PROVIDER = "auto"
+LEGACY_HF_INFERENCE_BASE_URL = "https://api-inference.huggingface.co"
 
 
 def pick_device(explicit_device: str) -> str:
@@ -106,20 +108,43 @@ def generate(
     return tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
 
 
-def generate_remote(model_id: str, prompt: str, max_new_tokens: int, temperature: float, top_p: float, token: str) -> str:
-    client = InferenceClient(model=model_id, token=token or None)
+def generate_remote(
+    model_id: str, prompt: str, max_new_tokens: int, temperature: float, top_p: float, token: str, provider: str
+) -> str:
+    provider_arg = provider if provider else None
+    token_arg = token or None
+    client = InferenceClient(model=model_id, provider=provider_arg, token=token_arg)
     messages = [{"role": "user", "content": prompt}]
 
     if hasattr(client, "chat") and hasattr(client.chat, "completions"):
-        resp = client.chat.completions.create(
-            messages=messages,
-            max_tokens=max_new_tokens,
+        try:
+            resp = client.chat.completions.create(
+                messages=messages,
+                max_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+            )
+            return resp.choices[0].message["content"].strip()
+        except Exception as e:
+            msg = str(e)
+            if "404" not in msg and "Not Found" not in msg:
+                raise
+
+    try:
+        text = client.text_generation(
+            prompt,
+            max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
         )
-        return resp.choices[0].message["content"].strip()
+        return text.strip()
+    except Exception as e:
+        msg = str(e)
+        if "404" not in msg and "Not Found" not in msg:
+            raise
 
-    text = client.text_generation(
+    legacy_client = InferenceClient(model=model_id, token=token_arg, base_url=LEGACY_HF_INFERENCE_BASE_URL)
+    text = legacy_client.text_generation(
         prompt,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
@@ -136,11 +161,16 @@ def main() -> None:
     parser.add_argument("--dtype", default=os.environ.get("QWEN_DTYPE", ""))
     parser.add_argument("--cache-dir", default=os.environ.get("QWEN_CACHE_DIR", ""))
     parser.add_argument("--hf-token", default=os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN") or "")
+    parser.add_argument("--provider", default=os.environ.get("QWEN_PROVIDER", DEFAULT_PROVIDER))
     parser.add_argument("--prompt", default="Say hello in one sentence.")
+    parser.add_argument("--demo-bad-math", action="store_true", default=False)
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top-p", type=float, default=0.9)
     args = parser.parse_args()
+
+    if args.demo_bad_math:
+        args.prompt = "Someone claims 12 - 5 = 10. Is that correct? Reply with 'Correct' or 'Incorrect' then the right result."
 
     if args.backend == "remote":
         try:
@@ -154,6 +184,7 @@ def main() -> None:
                 temperature=args.temperature,
                 top_p=args.top_p,
                 token=token,
+                provider=args.provider,
             )
             print(text)
             return
