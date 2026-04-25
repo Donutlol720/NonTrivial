@@ -2,12 +2,15 @@ import argparse
 import getpass
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import torch
 from huggingface_hub import InferenceClient
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.load_model import env_default_model_id, load_local_model, load_tokenizer, pick_device, pick_dtype
 
