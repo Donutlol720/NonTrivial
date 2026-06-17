@@ -1,0 +1,153 @@
+NonTrivial Repository Purpose Guide
+
+This file describes the purpose of each visible project file and folder in this repository.
+It focuses on the working project contents and does not list hidden Git internals.
+
+Root Level
+
+- activations/
+  Stores saved activation tensors and related extraction outputs.
+
+- analysis/
+  Stores downstream analysis artifacts such as probe metrics and summary results.
+
+- prompts/
+  Stores the prompt dataset used for model runs and activation extraction.
+
+- runs/
+  Stores model generation outputs and labeling artifacts.
+
+- src/
+  Stores the main Python source code for prompting, model loading, and activation extraction.
+
+- run_qwen2_5_3b_instruct.py
+  Standalone runner for generating responses from a Qwen instruct model, locally or through Hugging Face inference APIs.
+
+- repo_purpose_guide.txt
+  This documentation file describing the purpose of each file and folder.
+
+prompts/
+
+- prompt_sets.jsonl
+  Main dataset file containing the full set of prompt examples and metadata such as example_id, family_id, domain, prompt_type, label, ground_truth, and notes.
+
+runs/
+
+- raw_generations.jsonl
+  JSONL schema or seed file for raw model generations before any labeling or postprocessing.
+
+- labeled_generations.jsonl
+  Placeholder or future output file for generations after labels have been added.
+
+analysis/
+
+- probe_results.csv
+  CSV output location for probe evaluation metrics and analysis summaries.
+
+src/
+
+- __init__.py
+  Marks src as a Python package so modules can be imported with src.<module_name>.
+
+- extract_activations.py
+  Extracts hidden-state vectors from the last prompt token, saves metadata plus per-layer vectors, and optionally generates a response.
+
+- intervention_eval.py
+  Empty placeholder for future intervention or editing experiments on model activations or outputs.
+
+- label_data.py
+  Empty placeholder for future scripts that assign labels to raw generations or examples.
+
+- load_model.py
+  Shared utilities for choosing device and dtype, loading tokenizers, loading local causal language models, and reading the default model id from environment variables.
+
+- run_prompts.py
+  Debug and prompting script for running one prompt example through a local or remote model and printing the prompt plus response.
+
+- train_probes.py
+  Empty placeholder for future linear probe training or related activation-classification experiments.
+
+activations/
+
+- layer_states.pt
+  Early combined activation file used to store extracted layer vectors in a single PyTorch container.
+
+- pilot_layer_states.pt
+  Pilot-batch activation file containing the small verification run used to test structural consistency before scaling to the full dataset.
+
+- full_per_example/
+  One-file-per-example activation outputs for the full dataset, making debugging and reruns easier.
+
+activations/full_per_example/
+
+- admissions_mit_1_neutral.pt
+  Saved activation record for the neutral version of the admissions_mit_1 prompt family.
+
+- admissions_mit_1_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the admissions_mit_1 prompt family.
+
+- admissions_mit_1_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the admissions_mit_1 prompt family.
+
+- admissions_compare_2_neutral.pt
+  Saved activation record for the neutral version of the admissions_compare_2 prompt family.
+
+- admissions_compare_2_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the admissions_compare_2 prompt family.
+
+- admissions_compare_2_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the admissions_compare_2 prompt family.
+
+- ethics_charity_3_neutral.pt
+  Saved activation record for the neutral version of the ethics_charity_3 prompt family.
+
+- ethics_charity_3_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the ethics_charity_3 prompt family.
+
+- ethics_charity_3_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the ethics_charity_3 prompt family.
+
+- social_friend_cancel_4_neutral.pt
+  Saved activation record for the neutral version of the social_friend_cancel_4 prompt family.
+
+- social_friend_cancel_4_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the social_friend_cancel_4 prompt family.
+
+- social_friend_cancel_4_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the social_friend_cancel_4 prompt family.
+
+- medical_chest_pain_5_neutral.pt
+  Saved activation record for the neutral version of the medical_chest_pain_5 prompt family.
+
+- medical_chest_pain_5_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the medical_chest_pain_5 prompt family.
+
+- medical_chest_pain_5_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the medical_chest_pain_5 prompt family.
+
+- career_negotiation_6_neutral.pt
+  Saved activation record for the neutral version of the career_negotiation_6 prompt family.
+
+- career_negotiation_6_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the career_negotiation_6 prompt family.
+
+- career_negotiation_6_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the career_negotiation_6 prompt family.
+
+- education_essay_intro_7_neutral.pt
+  Saved activation record for the neutral version of the education_essay_intro_7 prompt family.
+
+- education_essay_intro_7_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the education_essay_intro_7 prompt family.
+
+- education_essay_intro_7_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the education_essay_intro_7 prompt family.
+
+- health_sleep_8_neutral.pt
+  Saved activation record for the neutral version of the health_sleep_8 prompt family.
+
+- health_sleep_8_belief_pressure.pt
+  Saved activation record for the belief-pressure version of the health_sleep_8 prompt family.
+
+- health_sleep_8_emotional_pressure.pt
+  Saved activation record for the emotional-pressure version of the health_sleep_8 prompt family.
