@@ -9,7 +9,7 @@ from huggingface_hub import InferenceClient
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-DEFAULT_MODEL_ID = "Qwen/Qwen3-4B-Instruct-2507"
+DEFAULT_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
 DEFAULT_PROVIDER = "auto"
 LEGACY_HF_INFERENCE_BASE_URL = "https://api-inference.huggingface.co"
 

@@ -1,8 +1,19 @@
 import os
-from typing import Optional, Tuple
+from typing import Any, Tuple
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+def _require_transformers():
+    try:
+        from transformers import AutoModelForCausalLM, AutoTokenizer  # type: ignore
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(
+            "Missing dependency: transformers. Install it in your active Python environment, e.g.\n"
+            "  python -m pip install -U transformers huggingface_hub accelerate safetensors sentencepiece\n"
+            "Then rerun the pipeline."
+        ) from e
+    return AutoModelForCausalLM, AutoTokenizer
 
 
 def pick_device(explicit_device: str) -> str:
@@ -30,9 +41,14 @@ def pick_dtype(device: str, explicit_dtype: str) -> torch.dtype:
     return torch.float32
 
 
-def load_tokenizer(model_id: str, cache_dir: str = ""):
+def load_tokenizer(model_id: str, cache_dir: str = "", trust_remote_code: bool = False) -> Any:
+    _, AutoTokenizer = _require_transformers()
     cache_dir_arg = cache_dir or None
-    tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir_arg)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        cache_dir=cache_dir_arg,
+        trust_remote_code=trust_remote_code,
+    )
     if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     return tokenizer
@@ -41,6 +57,7 @@ def load_tokenizer(model_id: str, cache_dir: str = ""):
 def load_local_model(
     model_id: str, device: str, dtype: torch.dtype, cache_dir: str = "", trust_remote_code: bool = False
 ) -> Tuple[object, object]:
+    AutoModelForCausalLM, AutoTokenizer = _require_transformers()
     cache_dir_arg = cache_dir or None
     tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir_arg, trust_remote_code=trust_remote_code)
     model = AutoModelForCausalLM.from_pretrained(
@@ -58,4 +75,4 @@ def load_local_model(
 
 
 def env_default_model_id() -> str:
-    return os.environ.get("QWEN_MODEL", "Qwen/Qwen3-4B-Instruct-2507")
+    return os.environ.get("QWEN_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
