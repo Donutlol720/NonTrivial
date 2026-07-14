@@ -20,13 +20,13 @@ and `correct_user_agreement`.
 - Evidence prompt variants per family: 6
 - Evidence-conflict prompts: 216
 - Standard no-document baseline prompts: 12
-- Total prompts in `generated_prompts_v1.jsonl`: 228
+- Total prompts in `data/generated_prompts_v1.jsonl`: 228
 
 ## Files
 
 - `evidence_families_v1.jsonl`
   - Family-level seed data: document, question, answer choices, correct answer, false answer, evidence sentence IDs.
-- `generated_prompts_v1.jsonl`
+- `data/generated_prompts_v1.jsonl`
   - Full expanded prompt dataset, including all evidence variants and standard factual baseline prompts.
 - `standard_sycophancy_baseline_v1.jsonl`
   - Small no-document factual sycophancy baseline.

@@ -11,6 +11,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.data.validate_dataset import resolve_dataset_path
 from src.load_model import env_default_model_id, load_local_model, load_tokenizer, pick_device, pick_dtype
 
 
@@ -312,7 +313,7 @@ def compute_attention_and_state(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", default="generated_prompts_v1.jsonl")
+    parser.add_argument("--dataset", default="data/generated_prompts_v1.jsonl")
     parser.add_argument("--out-jsonl", default="runs/generated_prompts_v1_with_outputs.jsonl")
     parser.add_argument("--out-attn-csv", default="")
     parser.add_argument("--out-states-pt", default="")
@@ -331,7 +332,7 @@ def main() -> None:
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
-    dataset_path = (repo_root / args.dataset).resolve() if not os.path.isabs(args.dataset) else Path(args.dataset).resolve()
+    dataset_path, _ = resolve_dataset_path(repo_root, args.dataset)
     items = read_jsonl(dataset_path)
     if args.limit and args.limit > 0:
         items = items[: args.limit]
