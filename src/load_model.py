@@ -16,6 +16,28 @@ def _require_transformers():
     return AutoModelForCausalLM, AutoTokenizer
 
 
+def _load_tokenizer_with_fallback(AutoTokenizer: Any, model_id: str, cache_dir_arg: Any, trust_remote_code: bool) -> Any:
+    try:
+        return AutoTokenizer.from_pretrained(
+            model_id,
+            cache_dir=cache_dir_arg,
+            trust_remote_code=trust_remote_code,
+        )
+    except ValueError as exc:
+        message = str(exc)
+        tokenizer_backend_error = "Couldn't instantiate the backend tokenizer"
+        if tokenizer_backend_error not in message:
+            raise
+        # Some newer Qwen releases only load cleanly through the slow tokenizer path
+        # in this environment; retrying here keeps the extraction pipeline model-agnostic.
+        return AutoTokenizer.from_pretrained(
+            model_id,
+            cache_dir=cache_dir_arg,
+            trust_remote_code=trust_remote_code,
+            use_fast=False,
+        )
+
+
 def pick_device(explicit_device: str) -> str:
     if explicit_device:
         return explicit_device
@@ -44,11 +66,7 @@ def pick_dtype(device: str, explicit_dtype: str) -> torch.dtype:
 def load_tokenizer(model_id: str, cache_dir: str = "", trust_remote_code: bool = False) -> Any:
     _, AutoTokenizer = _require_transformers()
     cache_dir_arg = cache_dir or None
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_id,
-        cache_dir=cache_dir_arg,
-        trust_remote_code=trust_remote_code,
-    )
+    tokenizer = _load_tokenizer_with_fallback(AutoTokenizer, model_id, cache_dir_arg, trust_remote_code)
     if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     return tokenizer
@@ -59,7 +77,7 @@ def load_local_model(
 ) -> Tuple[object, object]:
     AutoModelForCausalLM, AutoTokenizer = _require_transformers()
     cache_dir_arg = cache_dir or None
-    tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir_arg, trust_remote_code=trust_remote_code)
+    tokenizer = _load_tokenizer_with_fallback(AutoTokenizer, model_id, cache_dir_arg, trust_remote_code)
     model = AutoModelForCausalLM.from_pretrained(
         model_id, cache_dir=cache_dir_arg, torch_dtype=dtype, trust_remote_code=trust_remote_code
     )
