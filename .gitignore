@@ -1,7 +1,40 @@
 __pycache__/
 *.pyc
+
 outputs/
 results/
 activations/
-analysis/
+/analysis/
 runs/
+
+# Python virtualenvs
+.venv/
+.venv*/
+venv/
+venv*/
+env/
+env*/
+
+# HuggingFace / Torch local caches
+model_cache/
+*.safetensors
+*.pt
+*.bin
+*.pth
+temp_offload_folder/
+temp_offload*/
+
+# Local logs
+logs/
+*.log
+
+# Local / dev single-family data files (keep generated_prompts_v1.jsonl which is tracked)
+data/single_family_*.jsonl
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+*~

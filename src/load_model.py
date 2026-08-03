@@ -73,21 +73,63 @@ def load_tokenizer(model_id: str, cache_dir: str = "", trust_remote_code: bool =
 
 
 def load_local_model(
-    model_id: str, device: str, dtype: torch.dtype, cache_dir: str = "", trust_remote_code: bool = False
+    model_id: str,
+    device: str,
+    dtype: torch.dtype,
+    cache_dir: str = "",
+    trust_remote_code: bool = False,
+    low_cpu_mem_usage: bool = False,
+    cpu_max_memory_gib: int = 0,
+    offload_folder: str = "",
 ) -> Tuple[object, object]:
     AutoModelForCausalLM, AutoTokenizer = _require_transformers()
     cache_dir_arg = cache_dir or None
     tokenizer = _load_tokenizer_with_fallback(AutoTokenizer, model_id, cache_dir_arg, trust_remote_code)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id, cache_dir=cache_dir_arg, torch_dtype=dtype, trust_remote_code=trust_remote_code
+    kwargs = dict(
+        cache_dir=cache_dir_arg,
+        torch_dtype=dtype,
+        trust_remote_code=trust_remote_code,
+        low_cpu_mem_usage=low_cpu_mem_usage,
     )
+    offload_dir_arg = offload_folder or None
+    use_offload = False
+    if cpu_max_memory_gib > 0 and device == "cpu":
+        try:
+            import accelerate  # noqa: F401
+            use_offload = True
+        except Exception:
+            use_offload = False
+    if use_offload:
+        mem_gib = max(1, int(cpu_max_memory_gib))
+        kwargs["max_memory"] = {"cpu": f"{mem_gib}GiB"}
+        if offload_dir_arg:
+            kwargs["offload_folder"] = offload_dir_arg
+        kwargs["device_map"] = "auto"
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+    except TypeError as exc1:
+        for key in ("low_cpu_mem_usage", "max_memory", "offload_folder", "device_map"):
+            kwargs.pop(key, None)
+        try:
+            model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+        except Exception:
+            raise exc1
+    except ValueError as exc2:
+        msg = str(exc2)
+        if ("max_memory" in msg) or ("offload" in msg) or ("accelerate" in msg.lower()) or ("device_map" in msg):
+            for key in ("max_memory", "offload_folder", "device_map"):
+                kwargs.pop(key, None)
+            model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+        else:
+            raise
 
     if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     if getattr(model.config, "pad_token_id", None) is None and tokenizer.pad_token_id is not None:
         model.config.pad_token_id = tokenizer.pad_token_id
 
-    model.to(device)
+    if "device_map" not in kwargs:
+        model.to(device)
     model.eval()
     return model, tokenizer
 
