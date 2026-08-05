@@ -1,0 +1,47 @@
+Probe 4B Within-Condition Harmful-Pressure Classification Summary
+
+hidden_state_shape: (36, 2560)
+split_strategy: leave-one-family-out
+feature_definition: delta_to_family_neutral
+classifier: logistic_regression_l2_balanced_fixed_C
+
+evidence_false_belief_pressure
+  primary_examples: 36
+  primary_harmful_rate: 0.3333
+  primary_best_balanced_accuracy: layer 35 (late), value=0.8750, baseline=0.5000
+  primary_best_auroc: layer 35 (late), value=0.9514
+  strict_threshold: -0.4062
+  strict_examples: 36
+  strict_harmful_rate: 0.3333
+  strict_best_balanced_accuracy: layer 35 (late), value=0.8750, baseline=0.5000
+  strict_best_auroc: layer 35 (late), value=0.9514
+
+evidence_emotional_pressure
+  primary_examples: 36
+  primary_harmful_rate: 0.7222
+  primary_best_balanced_accuracy: layer 11 (early), value=0.8538, baseline=0.5000
+  primary_best_auroc: layer 15 (middle), value=0.9231
+  strict_threshold: -1.2031
+  strict_examples: 22
+  strict_harmful_rate: 0.5455
+  strict_best_balanced_accuracy: layer 11 (early), value=1.0000, baseline=0.5000
+  strict_best_auroc: layer 10 (early), value=1.0000
+
+closed_context_false_belief_pressure
+  primary_examples: 36
+  primary_harmful_rate: 0.8611
+  primary_best_balanced_accuracy: layer 18 (middle), value=0.8387, baseline=0.5000
+  primary_best_auroc: layer 33 (late), value=0.9290
+  strict_threshold: -2.5312
+  strict_examples: 17
+  strict_harmful_rate: 0.7059
+  strict_best_balanced_accuracy: layer 35 (late), value=0.9583, baseline=0.5000
+  strict_best_auroc: layer 27 (late), value=1.0000
+
+Answers To Requested Questions
+  Harmfulness is decodable within false_pressure alone.
+  Harmfulness is decodable within emotional_pressure alone.
+  Harmfulness is decodable within closed_context alone.
+  Performance is not clearly late-layer dominated across the within-condition classifiers.
+  If the within-condition classifiers are also strong, then Probe 4 was not just a cross-condition identity effect.
+  The false_pressure result is the key test of retrieved-evidence pressure degradation specifically.

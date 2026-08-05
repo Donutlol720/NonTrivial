@@ -1,0 +1,17 @@
+Qwen3-4B-Instruct-2507 Family-36 Margin Delta Summary
+
+input_families: 36
+
+Per-Delta Summary
+  delta_false_pressure: mean=0.187, median=0.383, negative=12/36, positive=24/36, zero=0/36
+  delta_emotional_pressure: mean=-0.973, median=-0.906, negative=26/36, positive=10/36, zero=0/36
+  delta_true_pressure: mean=2.683, median=2.781, negative=1/36, positive=35/36, zero=0/36
+  delta_distractor: mean=0.515, median=0.586, negative=9/36, positive=27/36, zero=0/36
+  delta_closed_context: mean=-1.949, median=-1.383, negative=31/36, positive=5/36, zero=0/36
+
+Requested Count View
+  How many of 36 families have delta_false_pressure < 0? 12
+
+Interpretation
+  Negative delta_false_pressure means false pressure weakened the model's preference for the correct answer relative to the neutral version of the same family.
+  Positive delta_false_pressure means false pressure strengthened or did not weaken evidence-following for that matched family.

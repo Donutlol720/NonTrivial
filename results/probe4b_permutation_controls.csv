@@ -1,0 +1,7 @@
+probe,label_scheme,scope,source_condition,target_condition,real_best_balanced_accuracy,real_best_layer,permute_repeats,permute_mean_best_balanced_accuracy,permute_p95_best_balanced_accuracy,empirical_p_value
+4B,primary,within_condition,evidence_false_belief_pressure,evidence_false_belief_pressure,0.875000,35,20,0.704167,0.754167,0.047619
+4B,primary,within_condition,evidence_emotional_pressure,evidence_emotional_pressure,0.853846,11,20,0.670385,0.740385,0.047619
+4B,primary,within_condition,closed_context_false_belief_pressure,closed_context_false_belief_pressure,0.838710,18,20,0.738065,0.822581,0.047619
+4B,strict,within_condition,evidence_false_belief_pressure,evidence_false_belief_pressure,0.895833,21,20,0.782292,0.834375,0.047619
+4B,strict,within_condition,evidence_emotional_pressure,evidence_emotional_pressure,1.000000,11,20,0.730000,0.789167,0.047619
+4B,strict,within_condition,closed_context_false_belief_pressure,closed_context_false_belief_pressure,0.954545,35,20,0.750909,0.818182,0.047619

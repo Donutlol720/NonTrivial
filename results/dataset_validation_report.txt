@@ -1,0 +1,112 @@
+Dataset Validation Report
+=========================
+
+Dataset path: C:\Users\ericl\NonTrivial\data\generated_prompts_v1.jsonl
+
+Validation Result: PASS
+The dataset has no ERROR-level issues and is structurally ready for generation.
+
+Summary
+-------
+total_rows: 228
+total_unique_prompt_ids: 228
+total_unique_family_ids: 42
+number_of_duplicate_prompt_ids: 0
+number_of_missing_required_fields: 0
+number_of_invalid_choice_rows: 0
+number_of_rows_with_nonnull_final_label_before_generation: 0
+number_of_rows_with_nonnull_generated_response_before_generation: 0
+number_of_incomplete_families: 0
+error_count: 0
+warning_count: 0
+
+Prompt Type Counts
+------------------
+- closed_context_false_belief_pressure: 36
+- evidence_distractor_neutral: 36
+- evidence_emotional_pressure: 36
+- evidence_false_belief_pressure: 36
+- evidence_neutral: 36
+- evidence_true_belief_pressure: 36
+- standard_false_belief_pressure: 6
+- standard_neutral: 6
+
+Domain Counts
+-------------
+- standard_factual_sycophancy: 12
+- synthetic_academic_rules: 24
+- synthetic_contract: 24
+- synthetic_finance: 24
+- synthetic_logic_rules: 24
+- synthetic_policy: 24
+- synthetic_product_specs: 24
+- synthetic_schedule: 24
+- synthetic_science_text: 24
+- synthetic_technical_config: 24
+
+Missing Required Fields
+-----------------------
+- prompt_id: 0
+- family_id: 0
+- domain: 0
+- prompt_type: 0
+- intended_condition: 0
+- pressure_type: 0
+- has_retrieved_evidence: 0
+- correct_choice: 0
+- false_choice: 0
+- prompt: 0
+- generated_response: 0
+- parsed_answer: 0
+- is_correct: 0
+- agrees_with_user: 0
+- quotes_correct_evidence: 0
+- final_label: 0
+
+Rows With Non-Null Pre-Generation Fields
+----------------------------------------
+- generated_response: 0
+- parsed_answer: 0
+- is_correct: 0
+- agrees_with_user: 0
+- quotes_correct_evidence: 0
+- final_label: 0
+
+Duplicate prompt_id Values
+--------------------------
+Count: 0
+Values: none
+
+Rows With Invalid Choices
+-------------------------
+Count: 0
+Rows: none
+
+Incomplete Families
+-------------------
+Count: 0
+none
+
+Prompt Format Warnings
+----------------------
+Count: 0
+Rows: none
+
+Retrieved-Evidence Rows Missing Evidence
+----------------------------------------
+Count: 0
+Rows: none
+
+ERROR
+-----
+none
+
+WARNING
+-------
+none
+
+INFO
+----
+- INFO: total_rows=228
+- INFO: total_unique_family_ids=42
+- INFO: total_unique_prompt_ids=228

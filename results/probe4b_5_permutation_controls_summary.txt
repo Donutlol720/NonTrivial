@@ -1,0 +1,149 @@
+Probe 4B / Probe 5 permutation-label controls
+
+repeats: 15
+hidden_state_shape: (36, 2560)
+
+[4B:within_condition] primary evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.875000 at layer 35
+  permute mean = 0.713889
+  permute p95  = 0.775000
+  empirical p  = 0.062500
+
+[4B:within_condition] primary evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 0.853846 at layer 11
+  permute mean = 0.668718
+  permute p95  = 0.750000
+  empirical p  = 0.062500
+
+[4B:within_condition] primary closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.838710 at layer 18
+  permute mean = 0.747527
+  permute p95  = 0.822581
+  empirical p  = 0.062500
+
+[5:within_condition] primary evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.875000 at layer 35
+  permute mean = 0.698611
+  permute p95  = 0.750000
+  empirical p  = 0.062500
+
+[5:cross_condition] primary evidence_false_belief_pressure -> evidence_emotional_pressure:
+  real best BA = 0.930769 at layer 24
+  permute mean = 0.703846
+  permute p95  = 0.771154
+  empirical p  = 0.062500
+
+[5:cross_condition] primary evidence_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.851613 at layer 13
+  permute mean = 0.748387
+  permute p95  = 0.816129
+  empirical p  = 0.062500
+
+[5:cross_condition] primary evidence_emotional_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.958333 at layer 35
+  permute mean = 0.669444
+  permute p95  = 0.714583
+  empirical p  = 0.062500
+
+[5:within_condition] primary evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 0.853846 at layer 11
+  permute mean = 0.687179
+  permute p95  = 0.763462
+  empirical p  = 0.062500
+
+[5:cross_condition] primary evidence_emotional_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.819355 at layer 1
+  permute mean = 0.742581
+  permute p95  = 0.804839
+  empirical p  = 0.125000
+
+[5:cross_condition] primary closed_context_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.770833 at layer 32
+  permute mean = 0.669444
+  permute p95  = 0.741667
+  empirical p  = 0.125000
+
+[5:cross_condition] primary closed_context_false_belief_pressure -> evidence_emotional_pressure:
+  real best BA = 0.803846 at layer 32
+  permute mean = 0.694359
+  permute p95  = 0.751154
+  empirical p  = 0.125000
+
+[5:within_condition] primary closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.838710 at layer 18
+  permute mean = 0.717849
+  permute p95  = 0.795161
+  empirical p  = 0.062500
+
+[4B:within_condition] strict evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.895833 at layer 21
+  permute mean = 0.783333
+  permute p95  = 0.833333
+  empirical p  = 0.062500
+
+[4B:within_condition] strict evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 1.000000 at layer 11
+  permute mean = 0.737037
+  permute p95  = 0.790556
+  empirical p  = 0.062500
+
+[4B:within_condition] strict closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.954545 at layer 35
+  permute mean = 0.757576
+  permute p95  = 0.831818
+  empirical p  = 0.062500
+
+[5:within_condition] strict evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.895833 at layer 21
+  permute mean = 0.777778
+  permute p95  = 0.860417
+  empirical p  = 0.062500
+
+[5:cross_condition] strict evidence_false_belief_pressure -> evidence_emotional_pressure:
+  real best BA = 0.950000 at layer 22
+  permute mean = 0.756296
+  permute p95  = 0.863333
+  empirical p  = 0.062500
+
+[5:cross_condition] strict evidence_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 1.000000 at layer 34
+  permute mean = 0.795152
+  permute p95  = 0.877273
+  empirical p  = 0.062500
+
+[5:cross_condition] strict evidence_emotional_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.979167 at layer 32
+  permute mean = 0.762500
+  permute p95  = 0.839583
+  empirical p  = 0.062500
+
+[5:within_condition] strict evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 1.000000 at layer 11
+  permute mean = 0.733333
+  permute p95  = 0.788889
+  empirical p  = 0.062500
+
+[5:cross_condition] strict evidence_emotional_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.954545 at layer 21
+  permute mean = 0.783636
+  permute p95  = 0.863636
+  empirical p  = 0.062500
+
+[5:cross_condition] strict closed_context_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.979167 at layer 32
+  permute mean = 0.775000
+  permute p95  = 0.831250
+  empirical p  = 0.062500
+
+[5:cross_condition] strict closed_context_false_belief_pressure -> evidence_emotional_pressure:
+  real best BA = 1.000000 at layer 35
+  permute mean = 0.749259
+  permute p95  = 0.863333
+  empirical p  = 0.062500
+
+[5:within_condition] strict closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.954545 at layer 35
+  permute mean = 0.765455
+  permute p95  = 0.857273
+  empirical p  = 0.062500
+

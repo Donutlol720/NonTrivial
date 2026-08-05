@@ -1,0 +1,337 @@
+subset_key,subset_label,layer_index,cosine_pair,n_families,mean_cosine,median_cosine
+all_8_families,all 8 families,0,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7903561592102051,0.8092546164989471
+all_8_families,all 8 families,0,"cosine(false_pressure_delta, true_pressure_delta)",8,0.8447315394878387,0.8566161394119263
+all_8_families,all 8 families,0,"cosine(false_pressure_delta, distractor_delta)",8,0.24003551341593266,0.20242756605148315
+all_8_families,all 8 families,0,"cosine(false_pressure_delta, closed_context_delta)",8,0.53996242582798,0.5652803778648376
+all_8_families,all 8 families,1,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.9237915202975273,0.9198963046073914
+all_8_families,all 8 families,1,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9501406103372574,0.9480611979961395
+all_8_families,all 8 families,1,"cosine(false_pressure_delta, distractor_delta)",8,-0.0617610951885581,-0.06856156513094902
+all_8_families,all 8 families,1,"cosine(false_pressure_delta, closed_context_delta)",8,0.7343047559261322,0.7362541258335114
+all_8_families,all 8 families,2,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.8963610157370567,0.8967482149600983
+all_8_families,all 8 families,2,"cosine(false_pressure_delta, true_pressure_delta)",8,0.963017649948597,0.9681219458580017
+all_8_families,all 8 families,2,"cosine(false_pressure_delta, distractor_delta)",8,0.3498980086296797,0.3781685382127762
+all_8_families,all 8 families,2,"cosine(false_pressure_delta, closed_context_delta)",8,0.64741525426507,0.6757865846157074
+all_8_families,all 8 families,3,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.8730847537517548,0.871377170085907
+all_8_families,all 8 families,3,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9563120305538177,0.9597975015640259
+all_8_families,all 8 families,3,"cosine(false_pressure_delta, distractor_delta)",8,0.29275523126125336,0.303293839097023
+all_8_families,all 8 families,3,"cosine(false_pressure_delta, closed_context_delta)",8,0.5932412892580032,0.6013047397136688
+all_8_families,all 8 families,4,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.8630092069506645,0.8691681623458862
+all_8_families,all 8 families,4,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9486880823969841,0.9509516954421997
+all_8_families,all 8 families,4,"cosine(false_pressure_delta, distractor_delta)",8,0.38458435237407684,0.3831441253423691
+all_8_families,all 8 families,4,"cosine(false_pressure_delta, closed_context_delta)",8,0.5454374887049198,0.5503801703453064
+all_8_families,all 8 families,5,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.8418274000287056,0.8436975479125977
+all_8_families,all 8 families,5,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9510652273893356,0.9519713819026947
+all_8_families,all 8 families,5,"cosine(false_pressure_delta, distractor_delta)",8,0.33973050117492676,0.35209789872169495
+all_8_families,all 8 families,5,"cosine(false_pressure_delta, closed_context_delta)",8,0.561659462749958,0.5538211762905121
+all_8_families,all 8 families,6,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7907230332493782,0.7923408448696136
+all_8_families,all 8 families,6,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9530013278126717,0.953893631696701
+all_8_families,all 8 families,6,"cosine(false_pressure_delta, distractor_delta)",8,0.3441401980817318,0.35593074560165405
+all_8_families,all 8 families,6,"cosine(false_pressure_delta, closed_context_delta)",8,0.54769491776824,0.5393955409526825
+all_8_families,all 8 families,7,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7486334294080734,0.7470783591270447
+all_8_families,all 8 families,7,"cosine(false_pressure_delta, true_pressure_delta)",8,0.949921615421772,0.9571229517459869
+all_8_families,all 8 families,7,"cosine(false_pressure_delta, distractor_delta)",8,0.2009681174531579,0.21366515010595322
+all_8_families,all 8 families,7,"cosine(false_pressure_delta, closed_context_delta)",8,0.5810736492276192,0.5944445729255676
+all_8_families,all 8 families,8,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7449662089347839,0.7531144618988037
+all_8_families,all 8 families,8,"cosine(false_pressure_delta, true_pressure_delta)",8,0.908477745950222,0.9207131862640381
+all_8_families,all 8 families,8,"cosine(false_pressure_delta, distractor_delta)",8,0.16862270329147577,0.16472455859184265
+all_8_families,all 8 families,8,"cosine(false_pressure_delta, closed_context_delta)",8,0.6343129277229309,0.638514906167984
+all_8_families,all 8 families,9,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7191824167966843,0.7181083261966705
+all_8_families,all 8 families,9,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9202976748347282,0.9275138974189758
+all_8_families,all 8 families,9,"cosine(false_pressure_delta, distractor_delta)",8,0.10870645107934251,0.1072317399084568
+all_8_families,all 8 families,9,"cosine(false_pressure_delta, closed_context_delta)",8,0.6585750356316566,0.6698008477687836
+all_8_families,all 8 families,10,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7360140383243561,0.7355565428733826
+all_8_families,all 8 families,10,"cosine(false_pressure_delta, true_pressure_delta)",8,0.926646500825882,0.931432694196701
+all_8_families,all 8 families,10,"cosine(false_pressure_delta, distractor_delta)",8,0.1102884957799688,0.09143009036779404
+all_8_families,all 8 families,10,"cosine(false_pressure_delta, closed_context_delta)",8,0.6795704215764999,0.7036169767379761
+all_8_families,all 8 families,11,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7224289327859879,0.7199614346027374
+all_8_families,all 8 families,11,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9331643134355545,0.9376891255378723
+all_8_families,all 8 families,11,"cosine(false_pressure_delta, distractor_delta)",8,0.1061562211252749,0.08960802108049393
+all_8_families,all 8 families,11,"cosine(false_pressure_delta, closed_context_delta)",8,0.6773879528045654,0.6898535192012787
+all_8_families,all 8 families,12,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7386902049183846,0.7388641536235809
+all_8_families,all 8 families,12,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9381303638219833,0.9474180638790131
+all_8_families,all 8 families,12,"cosine(false_pressure_delta, distractor_delta)",8,0.17153362557291985,0.15723492950201035
+all_8_families,all 8 families,12,"cosine(false_pressure_delta, closed_context_delta)",8,0.6838091686367989,0.6839801967144012
+all_8_families,all 8 families,13,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7140254974365234,0.7123400568962097
+all_8_families,all 8 families,13,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9439626485109329,0.9508504271507263
+all_8_families,all 8 families,13,"cosine(false_pressure_delta, distractor_delta)",8,0.15350091736763716,0.14341220259666443
+all_8_families,all 8 families,13,"cosine(false_pressure_delta, closed_context_delta)",8,0.6906343623995781,0.6955827474594116
+all_8_families,all 8 families,14,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.7020450755953789,0.6998638212680817
+all_8_families,all 8 families,14,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9374402016401291,0.9462560713291168
+all_8_families,all 8 families,14,"cosine(false_pressure_delta, distractor_delta)",8,0.17186735849827528,0.16744915395975113
+all_8_families,all 8 families,14,"cosine(false_pressure_delta, closed_context_delta)",8,0.6635683104395866,0.6548367142677307
+all_8_families,all 8 families,15,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.689777135848999,0.6783626973628998
+all_8_families,all 8 families,15,"cosine(false_pressure_delta, true_pressure_delta)",8,0.9142308011651039,0.9236568510532379
+all_8_families,all 8 families,15,"cosine(false_pressure_delta, distractor_delta)",8,0.25038873963057995,0.24525294452905655
+all_8_families,all 8 families,15,"cosine(false_pressure_delta, closed_context_delta)",8,0.6542629674077034,0.6480081975460052
+all_8_families,all 8 families,16,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6631159633398056,0.6709073781967163
+all_8_families,all 8 families,16,"cosine(false_pressure_delta, true_pressure_delta)",8,0.872848741710186,0.8762148916721344
+all_8_families,all 8 families,16,"cosine(false_pressure_delta, distractor_delta)",8,0.2436544243246317,0.22958830744028091
+all_8_families,all 8 families,16,"cosine(false_pressure_delta, closed_context_delta)",8,0.6544610112905502,0.6523307859897614
+all_8_families,all 8 families,17,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6612189412117004,0.6523645520210266
+all_8_families,all 8 families,17,"cosine(false_pressure_delta, true_pressure_delta)",8,0.8208496645092964,0.8470830917358398
+all_8_families,all 8 families,17,"cosine(false_pressure_delta, distractor_delta)",8,0.13025033427402377,0.13452162593603134
+all_8_families,all 8 families,17,"cosine(false_pressure_delta, closed_context_delta)",8,0.687618725001812,0.6850690543651581
+all_8_families,all 8 families,18,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6490645408630371,0.647049069404602
+all_8_families,all 8 families,18,"cosine(false_pressure_delta, true_pressure_delta)",8,0.8196565955877304,0.8697283864021301
+all_8_families,all 8 families,18,"cosine(false_pressure_delta, distractor_delta)",8,0.18848858680576086,0.23108436912298203
+all_8_families,all 8 families,18,"cosine(false_pressure_delta, closed_context_delta)",8,0.7049622684717178,0.7030104994773865
+all_8_families,all 8 families,19,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.654974453151226,0.6562975347042084
+all_8_families,all 8 families,19,"cosine(false_pressure_delta, true_pressure_delta)",8,0.8040289506316185,0.8658754825592041
+all_8_families,all 8 families,19,"cosine(false_pressure_delta, distractor_delta)",8,0.19076760695315897,0.20542844384908676
+all_8_families,all 8 families,19,"cosine(false_pressure_delta, closed_context_delta)",8,0.7165046781301498,0.7193654775619507
+all_8_families,all 8 families,20,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6184259355068207,0.6027471721172333
+all_8_families,all 8 families,20,"cosine(false_pressure_delta, true_pressure_delta)",8,0.7867881581187248,0.8550387918949127
+all_8_families,all 8 families,20,"cosine(false_pressure_delta, distractor_delta)",8,0.23046442784834653,0.23608600348234177
+all_8_families,all 8 families,20,"cosine(false_pressure_delta, closed_context_delta)",8,0.6869054958224297,0.6872451305389404
+all_8_families,all 8 families,21,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6387897357344627,0.6353988349437714
+all_8_families,all 8 families,21,"cosine(false_pressure_delta, true_pressure_delta)",8,0.746283482760191,0.8601104915142059
+all_8_families,all 8 families,21,"cosine(false_pressure_delta, distractor_delta)",8,0.18736960855312645,0.20872044563293457
+all_8_families,all 8 families,21,"cosine(false_pressure_delta, closed_context_delta)",8,0.7169815674424171,0.7047690749168396
+all_8_families,all 8 families,22,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6226271390914917,0.61935755610466
+all_8_families,all 8 families,22,"cosine(false_pressure_delta, true_pressure_delta)",8,0.7582723833620548,0.8532902300357819
+all_8_families,all 8 families,22,"cosine(false_pressure_delta, distractor_delta)",8,0.2196476999670267,0.224647656083107
+all_8_families,all 8 families,22,"cosine(false_pressure_delta, closed_context_delta)",8,0.7035758048295975,0.696042537689209
+all_8_families,all 8 families,23,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6317419558763504,0.627269446849823
+all_8_families,all 8 families,23,"cosine(false_pressure_delta, true_pressure_delta)",8,0.7776764929294586,0.8550703525543213
+all_8_families,all 8 families,23,"cosine(false_pressure_delta, distractor_delta)",8,0.22416117740795016,0.21270954608917236
+all_8_families,all 8 families,23,"cosine(false_pressure_delta, closed_context_delta)",8,0.6888005211949348,0.6793876588344574
+all_8_families,all 8 families,24,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6341806352138519,0.6256431341171265
+all_8_families,all 8 families,24,"cosine(false_pressure_delta, true_pressure_delta)",8,0.7676368020474911,0.8588927388191223
+all_8_families,all 8 families,24,"cosine(false_pressure_delta, distractor_delta)",8,0.1861101882532239,0.17566683888435364
+all_8_families,all 8 families,24,"cosine(false_pressure_delta, closed_context_delta)",8,0.701004184782505,0.7033931314945221
+all_8_families,all 8 families,25,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6584206596016884,0.6555397510528564
+all_8_families,all 8 families,25,"cosine(false_pressure_delta, true_pressure_delta)",8,0.773922860622406,0.8598862886428833
+all_8_families,all 8 families,25,"cosine(false_pressure_delta, distractor_delta)",8,0.18549749231897295,0.1989191472530365
+all_8_families,all 8 families,25,"cosine(false_pressure_delta, closed_context_delta)",8,0.7155039981007576,0.7160782814025879
+all_8_families,all 8 families,26,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6754155084490776,0.6623105108737946
+all_8_families,all 8 families,26,"cosine(false_pressure_delta, true_pressure_delta)",8,0.7908825539052486,0.8649751842021942
+all_8_families,all 8 families,26,"cosine(false_pressure_delta, distractor_delta)",8,0.20232498878613114,0.21488285809755325
+all_8_families,all 8 families,26,"cosine(false_pressure_delta, closed_context_delta)",8,0.7142758890986443,0.7216758728027344
+all_8_families,all 8 families,27,"cosine(false_pressure_delta, emotional_pressure_delta)",8,0.6576643586158752,0.6435844004154205
+all_8_families,all 8 families,27,"cosine(false_pressure_delta, true_pressure_delta)",8,0.8207216188311577,0.8831475973129272
+all_8_families,all 8 families,27,"cosine(false_pressure_delta, distractor_delta)",8,0.0931596695445478,0.10212349519133568
+all_8_families,all 8 families,27,"cosine(false_pressure_delta, closed_context_delta)",8,0.7276932373642921,0.7297138571739197
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,0,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7989268388066973,0.8145611882209778
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,0,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8456042749541146,0.861690104007721
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,0,"cosine(false_pressure_delta, distractor_delta)",7,0.25539147215230124,0.20509594678878784
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,0,"cosine(false_pressure_delta, closed_context_delta)",7,0.5331208535603115,0.5623565912246704
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,1,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.9265415327889579,0.923331618309021
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,1,"cosine(false_pressure_delta, true_pressure_delta)",7,0.948836658682142,0.9473567008972168
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,1,"cosine(false_pressure_delta, distractor_delta)",7,-0.06257245263883046,-0.08104153722524643
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,1,"cosine(false_pressure_delta, closed_context_delta)",7,0.7328050306865147,0.7324231863021851
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,2,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.8972559656415667,0.8998991250991821
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,2,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9606539692197528,0.9660710096359253
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,2,"cosine(false_pressure_delta, distractor_delta)",7,0.346501105598041,0.38266074657440186
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,2,"cosine(false_pressure_delta, closed_context_delta)",7,0.6427979341575077,0.6718366742134094
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,3,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.8746190071105957,0.8787553310394287
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,3,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9535196253231594,0.9593687057495117
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,3,"cosine(false_pressure_delta, distractor_delta)",7,0.2947479912212917,0.31659209728240967
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,3,"cosine(false_pressure_delta, closed_context_delta)",7,0.5943103177206857,0.6168513894081116
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,4,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.8621383649962289,0.8692312240600586
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,4,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9453080381665911,0.9504945278167725
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,4,"cosine(false_pressure_delta, distractor_delta)",7,0.3852739930152893,0.38653138279914856
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,4,"cosine(false_pressure_delta, closed_context_delta)",7,0.5479064881801605,0.5726058483123779
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,5,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.8400282604353768,0.8430924415588379
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,5,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9476579768317086,0.9487336874008179
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,5,"cosine(false_pressure_delta, distractor_delta)",7,0.3478726829801287,0.36336660385131836
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,5,"cosine(false_pressure_delta, closed_context_delta)",7,0.5676952004432678,0.5787476301193237
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,6,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7860650505338397,0.7919039726257324
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,6,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9500048245702472,0.9530178308486938
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,6,"cosine(false_pressure_delta, distractor_delta)",7,0.349153003522328,0.3660685420036316
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,6,"cosine(false_pressure_delta, closed_context_delta)",7,0.5555817229407174,0.5475573539733887
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,7,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7444046054567609,0.7457091808319092
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,7,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9468179174831935,0.9570101499557495
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,7,"cosine(false_pressure_delta, distractor_delta)",7,0.19874218638454164,0.21078066527843475
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,7,"cosine(false_pressure_delta, closed_context_delta)",7,0.5918894239834377,0.5974037647247314
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,8,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7444422159876142,0.7571133375167847
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,8,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9050373775618417,0.9088660478591919
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,8,"cosine(false_pressure_delta, distractor_delta)",7,0.1663654733981405,0.14532515406608582
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,8,"cosine(false_pressure_delta, closed_context_delta)",7,0.6407925912312099,0.6464039087295532
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,9,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7193109307970319,0.7179338335990906
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,9,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9172226871762957,0.9162622690200806
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,9,"cosine(false_pressure_delta, distractor_delta)",7,0.11026137861024056,0.11664152145385742
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,9,"cosine(false_pressure_delta, closed_context_delta)",7,0.6644323638507298,0.6717463731765747
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,10,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7348411423819405,0.7268887758255005
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,10,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9235750266483852,0.919109046459198
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,10,"cosine(false_pressure_delta, distractor_delta)",7,0.11499896712069001,0.10554498434066772
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,10,"cosine(false_pressure_delta, closed_context_delta)",7,0.6833612322807312,0.7043771147727966
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,11,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7187828080994743,0.7027611136436462
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,11,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9305107763835362,0.928870439529419
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,11,"cosine(false_pressure_delta, distractor_delta)",7,0.10898943192192487,0.09289229661226273
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,11,"cosine(false_pressure_delta, closed_context_delta)",7,0.6807392409869603,0.6917895078659058
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,12,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7333362187658038,0.7288901209831238
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,12,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9357044696807861,0.9461603760719299
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,12,"cosine(false_pressure_delta, distractor_delta)",7,0.16866416803428105,0.15611572563648224
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,12,"cosine(false_pressure_delta, closed_context_delta)",7,0.6832391789981297,0.6801612973213196
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,13,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7105947988373893,0.6981748938560486
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,13,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9413881983075824,0.9508033990859985
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,13,"cosine(false_pressure_delta, distractor_delta)",7,0.15173640527895518,0.14268603920936584
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,13,"cosine(false_pressure_delta, closed_context_delta)",7,0.6901682700429644,0.6972684860229492
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,14,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.7004846589905875,0.6894991993904114
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,14,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9345864398138863,0.944908857345581
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,14,"cosine(false_pressure_delta, distractor_delta)",7,0.17137085433517182,0.15955542027950287
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,14,"cosine(false_pressure_delta, closed_context_delta)",7,0.6635865228516715,0.6515325903892517
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,15,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6931705049106053,0.6841513514518738
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,15,"cosine(false_pressure_delta, true_pressure_delta)",7,0.9113772681781224,0.9185750484466553
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,15,"cosine(false_pressure_delta, distractor_delta)",7,0.2536482108490808,0.25725141167640686
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,15,"cosine(false_pressure_delta, closed_context_delta)",7,0.6548305409295219,0.6457264423370361
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,16,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6707305823053632,0.6716607809066772
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,16,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8746564814022609,0.8850088119506836
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,16,"cosine(false_pressure_delta, distractor_delta)",7,0.2454700767993927,0.2282317578792572
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,16,"cosine(false_pressure_delta, closed_context_delta)",7,0.6595679521560669,0.664573609828949
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,17,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6687687124524798,0.6526817083358765
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,17,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8355404223714556,0.8621912002563477
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,17,"cosine(false_pressure_delta, distractor_delta)",7,0.13437153558645928,0.15258660912513733
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,17,"cosine(false_pressure_delta, closed_context_delta)",7,0.689739431653704,0.6948644518852234
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,18,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6549543482916695,0.6518831253051758
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,18,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8458579012325832,0.8808858394622803
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,18,"cosine(false_pressure_delta, distractor_delta)",7,0.20100367814302444,0.23412175476551056
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,18,"cosine(false_pressure_delta, closed_context_delta)",7,0.7055922406060355,0.7054685354232788
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,19,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6650494166782924,0.6610196828842163
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,19,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8429042271205357,0.8835188150405884
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,19,"cosine(false_pressure_delta, distractor_delta)",7,0.20996060515088694,0.24533718824386597
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,19,"cosine(false_pressure_delta, closed_context_delta)",7,0.7147454960005624,0.7133156657218933
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,20,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6269522990499224,0.6060389280319214
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,20,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8294340712683541,0.8748400807380676
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,20,"cosine(false_pressure_delta, distractor_delta)",7,0.2461374584319336,0.2789636254310608
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,20,"cosine(false_pressure_delta, closed_context_delta)",7,0.685573833329337,0.6782631278038025
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,21,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6629553692681449,0.6366592645645142
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,21,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8195032221930367,0.8713659644126892
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,21,"cosine(false_pressure_delta, distractor_delta)",7,0.21245530886309488,0.25745123624801636
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,21,"cosine(false_pressure_delta, closed_context_delta)",7,0.7181806990078518,0.7009505033493042
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,22,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6420487080301557,0.6310928463935852
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,22,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8247367995125907,0.8584372997283936
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,22,"cosine(false_pressure_delta, distractor_delta)",7,0.23797335901430675,0.2732815444469452
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,22,"cosine(false_pressure_delta, closed_context_delta)",7,0.7027082698685783,0.6904211640357971
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,23,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6488142779895237,0.6431648135185242
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,23,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8325888769967216,0.8596562147140503
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,23,"cosine(false_pressure_delta, distractor_delta)",7,0.23320805121745383,0.26458603143692017
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,23,"cosine(false_pressure_delta, closed_context_delta)",7,0.6856081145150321,0.6760587692260742
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,24,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6556989295142037,0.6333969831466675
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,24,"cosine(false_pressure_delta, true_pressure_delta)",7,0.831034072807857,0.8647796511650085
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,24,"cosine(false_pressure_delta, distractor_delta)",7,0.20326642904962813,0.22865578532218933
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,24,"cosine(false_pressure_delta, closed_context_delta)",7,0.6990897229739598,0.6944303512573242
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,25,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6784767934254238,0.660570502281189
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,25,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8322609322411674,0.8739602565765381
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,25,"cosine(false_pressure_delta, distractor_delta)",7,0.19825705433530466,0.26927900314331055
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,25,"cosine(false_pressure_delta, closed_context_delta)",7,0.7132926327841622,0.7113467454910278
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,26,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6932289344923837,0.6626895070075989
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,26,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8424440622329712,0.8833599090576172
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,26,"cosine(false_pressure_delta, distractor_delta)",7,0.21128385673676217,0.2776325047016144
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,26,"cosine(false_pressure_delta, closed_context_delta)",7,0.7116426825523376,0.7195354104042053
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,27,"cosine(false_pressure_delta, emotional_pressure_delta)",7,0.6625621063368661,0.660098135471344
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,27,"cosine(false_pressure_delta, true_pressure_delta)",7,0.8615555082048688,0.8933053612709045
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,27,"cosine(false_pressure_delta, distractor_delta)",7,0.09387642624122756,0.1161046177148819
+excluding_policy_library_checkout_003,excluding policy_library_checkout_003,27,"cosine(false_pressure_delta, closed_context_delta)",7,0.7226536359105792,0.7282736301422119
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,0,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7303614020347595,0.7303614020347595
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,0,"cosine(false_pressure_delta, true_pressure_delta)",1,0.8386223912239075,0.8386223912239075
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,0,"cosine(false_pressure_delta, distractor_delta)",1,0.13254380226135254,0.13254380226135254
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,0,"cosine(false_pressure_delta, closed_context_delta)",1,0.5878534317016602,0.5878534317016602
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,1,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.9045414328575134,0.9045414328575134
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,1,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9592682719230652,0.9592682719230652
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,1,"cosine(false_pressure_delta, distractor_delta)",1,-0.05608159303665161,-0.05608159303665161
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,1,"cosine(false_pressure_delta, closed_context_delta)",1,0.7448028326034546,0.7448028326034546
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,2,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.8900963664054871,0.8900963664054871
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,2,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9795634150505066,0.9795634150505066
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,2,"cosine(false_pressure_delta, distractor_delta)",1,0.3736763298511505,0.3736763298511505
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,2,"cosine(false_pressure_delta, closed_context_delta)",1,0.6797364950180054,0.6797364950180054
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,3,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.8623449802398682,0.8623449802398682
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,3,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9758588671684265,0.9758588671684265
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,3,"cosine(false_pressure_delta, distractor_delta)",1,0.2788059115409851,0.2788059115409851
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,3,"cosine(false_pressure_delta, closed_context_delta)",1,0.5857580900192261,0.5857580900192261
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,4,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.8691051006317139,0.8691051006317139
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,4,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9723483920097351,0.9723483920097351
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,4,"cosine(false_pressure_delta, distractor_delta)",1,0.3797568678855896,0.3797568678855896
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,4,"cosine(false_pressure_delta, closed_context_delta)",1,0.5281544923782349,0.5281544923782349
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,5,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.8544213771820068,0.8544213771820068
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,5,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9749159812927246,0.9749159812927246
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,5,"cosine(false_pressure_delta, distractor_delta)",1,0.2827352285385132,0.2827352285385132
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,5,"cosine(false_pressure_delta, closed_context_delta)",1,0.5194092988967896,0.5194092988967896
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,6,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.8233289122581482,0.8233289122581482
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,6,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9739768505096436,0.9739768505096436
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,6,"cosine(false_pressure_delta, distractor_delta)",1,0.3090505599975586,0.3090505599975586
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,6,"cosine(false_pressure_delta, closed_context_delta)",1,0.4924872815608978,0.4924872815608978
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,7,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7782351970672607,0.7782351970672607
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,7,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9716475009918213,0.9716475009918213
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,7,"cosine(false_pressure_delta, distractor_delta)",1,0.21654963493347168,0.21654963493347168
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,7,"cosine(false_pressure_delta, closed_context_delta)",1,0.5053632259368896,0.5053632259368896
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,8,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7486341595649719,0.7486341595649719
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,8,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9325603246688843,0.9325603246688843
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,8,"cosine(false_pressure_delta, distractor_delta)",1,0.1844233125448227,0.1844233125448227
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,8,"cosine(false_pressure_delta, closed_context_delta)",1,0.588955283164978,0.588955283164978
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,9,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7182828187942505,0.7182828187942505
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,9,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9418225884437561,0.9418225884437561
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,9,"cosine(false_pressure_delta, distractor_delta)",1,0.09782195836305618,0.09782195836305618
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,9,"cosine(false_pressure_delta, closed_context_delta)",1,0.6175737380981445,0.6175737380981445
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,10,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7442243099212646,0.7442243099212646
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,10,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9481468200683594,0.9481468200683594
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,10,"cosine(false_pressure_delta, distractor_delta)",1,0.07731519639492035,0.07731519639492035
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,10,"cosine(false_pressure_delta, closed_context_delta)",1,0.6530347466468811,0.6530347466468811
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,11,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7479518055915833,0.7479518055915833
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,11,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9517390727996826,0.9517390727996826
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,11,"cosine(false_pressure_delta, distractor_delta)",1,0.08632374554872513,0.08632374554872513
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,11,"cosine(false_pressure_delta, closed_context_delta)",1,0.6539289355278015,0.6539289355278015
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,12,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7761681079864502,0.7761681079864502
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,12,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9551116228103638,0.9551116228103638
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,12,"cosine(false_pressure_delta, distractor_delta)",1,0.19161982834339142,0.19161982834339142
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,12,"cosine(false_pressure_delta, closed_context_delta)",1,0.6877990961074829,0.6877990961074829
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,13,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7380403876304626,0.7380403876304626
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,13,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9619837999343872,0.9619837999343872
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,13,"cosine(false_pressure_delta, distractor_delta)",1,0.16585250198841095,0.16585250198841095
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,13,"cosine(false_pressure_delta, closed_context_delta)",1,0.693897008895874,0.693897008895874
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,14,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.7129679918289185,0.7129679918289185
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,14,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9574165344238281,0.9574165344238281
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,14,"cosine(false_pressure_delta, distractor_delta)",1,0.1753428876399994,0.1753428876399994
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,14,"cosine(false_pressure_delta, closed_context_delta)",1,0.6634408235549927,0.6634408235549927
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,15,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.6660235524177551,0.6660235524177551
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,15,"cosine(false_pressure_delta, true_pressure_delta)",1,0.9342055320739746,0.9342055320739746
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,15,"cosine(false_pressure_delta, distractor_delta)",1,0.22757244110107422,0.22757244110107422
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,15,"cosine(false_pressure_delta, closed_context_delta)",1,0.6502899527549744,0.6502899527549744
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,16,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.6098136305809021,0.6098136305809021
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,16,"cosine(false_pressure_delta, true_pressure_delta)",1,0.8601945638656616,0.8601945638656616
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,16,"cosine(false_pressure_delta, distractor_delta)",1,0.23094485700130463,0.23094485700130463
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,16,"cosine(false_pressure_delta, closed_context_delta)",1,0.6187124252319336,0.6187124252319336
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,17,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.6083705425262451,0.6083705425262451
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,17,"cosine(false_pressure_delta, true_pressure_delta)",1,0.7180143594741821,0.7180143594741821
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,17,"cosine(false_pressure_delta, distractor_delta)",1,0.1014019250869751,0.1014019250869751
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,17,"cosine(false_pressure_delta, closed_context_delta)",1,0.6727737784385681,0.6727737784385681
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,18,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.6078358888626099,0.6078358888626099
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,18,"cosine(false_pressure_delta, true_pressure_delta)",1,0.636247456073761,0.636247456073761
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,18,"cosine(false_pressure_delta, distractor_delta)",1,0.10088294744491577,0.10088294744491577
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,18,"cosine(false_pressure_delta, closed_context_delta)",1,0.7005524635314941,0.7005524635314941
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,19,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.5844497084617615,0.5844497084617615
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,19,"cosine(false_pressure_delta, true_pressure_delta)",1,0.531902015209198,0.531902015209198
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,19,"cosine(false_pressure_delta, distractor_delta)",1,0.05641661956906319,0.05641661956906319
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,19,"cosine(false_pressure_delta, closed_context_delta)",1,0.728818953037262,0.728818953037262
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,20,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.5587413907051086,0.5587413907051086
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,20,"cosine(false_pressure_delta, true_pressure_delta)",1,0.4882667660713196,0.4882667660713196
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,20,"cosine(false_pressure_delta, distractor_delta)",1,0.120753213763237,0.120753213763237
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,20,"cosine(false_pressure_delta, closed_context_delta)",1,0.6962271332740784,0.6962271332740784
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,21,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.46963030099868774,0.46963030099868774
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,21,"cosine(false_pressure_delta, true_pressure_delta)",1,0.23374530673027039,0.23374530673027039
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,21,"cosine(false_pressure_delta, distractor_delta)",1,0.011769706383347511,0.011769706383347511
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,21,"cosine(false_pressure_delta, closed_context_delta)",1,0.708587646484375,0.708587646484375
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,22,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.4866761565208435,0.4866761565208435
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,22,"cosine(false_pressure_delta, true_pressure_delta)",1,0.29302147030830383,0.29302147030830383
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,22,"cosine(false_pressure_delta, distractor_delta)",1,0.09136808663606644,0.09136808663606644
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,22,"cosine(false_pressure_delta, closed_context_delta)",1,0.7096485495567322,0.7096485495567322
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,23,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.512235701084137,0.512235701084137
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,23,"cosine(false_pressure_delta, true_pressure_delta)",1,0.39328980445861816,0.39328980445861816
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,23,"cosine(false_pressure_delta, distractor_delta)",1,0.16083306074142456,0.16083306074142456
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,23,"cosine(false_pressure_delta, closed_context_delta)",1,0.7111473679542542,0.7111473679542542
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,24,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.48355257511138916,0.48355257511138916
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,24,"cosine(false_pressure_delta, true_pressure_delta)",1,0.3238559067249298,0.3238559067249298
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,24,"cosine(false_pressure_delta, distractor_delta)",1,0.06601650267839432,0.06601650267839432
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,24,"cosine(false_pressure_delta, closed_context_delta)",1,0.7144054174423218,0.7144054174423218
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,25,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.5180277228355408,0.5180277228355408
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,25,"cosine(false_pressure_delta, true_pressure_delta)",1,0.36555635929107666,0.36555635929107666
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,25,"cosine(false_pressure_delta, distractor_delta)",1,0.09618055820465088,0.09618055820465088
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,25,"cosine(false_pressure_delta, closed_context_delta)",1,0.730983555316925,0.730983555316925
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,26,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.5507215261459351,0.5507215261459351
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,26,"cosine(false_pressure_delta, true_pressure_delta)",1,0.4299519956111908,0.4299519956111908
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,26,"cosine(false_pressure_delta, distractor_delta)",1,0.13961291313171387,0.13961291313171387
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,26,"cosine(false_pressure_delta, closed_context_delta)",1,0.7327083349227905,0.7327083349227905
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,27,"cosine(false_pressure_delta, emotional_pressure_delta)",1,0.6233801245689392,0.6233801245689392
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,27,"cosine(false_pressure_delta, true_pressure_delta)",1,0.5348843932151794,0.5348843932151794
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,27,"cosine(false_pressure_delta, distractor_delta)",1,0.08814237266778946,0.08814237266778946
+policy_library_checkout_003_alone,policy_library_checkout_003 alone,27,"cosine(false_pressure_delta, closed_context_delta)",1,0.7629704475402832,0.7629704475402832

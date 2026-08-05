@@ -1,8 +1,9 @@
 __pycache__/
 *.pyc
 
-outputs/
-results/
+# Broad output caches still excluded (too large / model artifacts).
+# Small derived CSV/TXT outputs and raw state_logits JSONL inside
+# outputs/ and results/ are now tracked — no blanket exclusion here.
 activations/
 /analysis/
 runs/
@@ -15,7 +16,7 @@ venv*/
 env/
 env*/
 
-# HuggingFace / Torch local caches
+# HuggingFace / Torch local caches + large binary blobs
 model_cache/
 *.safetensors
 *.pt

@@ -1,0 +1,20 @@
+Qwen3 1.7B Pilot-8 Phase 3E.5 Robustness Summary
+
+false_pressure_delta_norm vs abs(delta_false_pressure)
+  best all-8 Pearson: layer 0, r=0.7978, Spearman=0.8095
+  best excluding policy_library_checkout_003: layer 0, r=0.8092, Spearman=0.8214
+  leave-one-family-out range at the all-8 peak layer 0: Pearson [0.7439, 0.8549], Spearman [0.7143, 0.9643]
+
+closed_context_delta_norm vs abs(delta_closed_context)
+  best all-8 Pearson: layer 0, r=0.6515, Spearman=0.4762
+  best excluding policy_library_checkout_003: layer 8, r=0.7002, Spearman=0.7857
+  leave-one-family-out range at the all-8 peak layer 0: Pearson [0.2749, 0.8303], Spearman [0.2143, 0.6429]
+
+distractor_delta_norm vs abs(delta_distractor)
+  best all-8 Pearson: layer 21, r=0.7320, Spearman=0.2381
+  best excluding policy_library_checkout_003: layer 2, r=0.5632, Spearman=0.2500
+  leave-one-family-out range at the all-8 peak layer 21: Pearson [-0.2827, 0.8363], Spearman [-0.1429, 0.5000]
+
+Interpretation
+  If the excluding-outlier and leave-one-family-out correlations stay positive and reasonably sized, the alignment pattern is broad across the pilot rather than being mostly driven by policy_library_checkout_003.
+  If correlations collapse or change sign after removing policy_library_checkout_003, the apparent alignment is likely fragile.

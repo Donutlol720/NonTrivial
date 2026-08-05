@@ -1,0 +1,36 @@
+Probe 2 Margin-Degradation Ridge Regression Summary
+
+Diagnostics
+  all_36_families_present: True
+  jsonl_and_delta_csv_families_match: True
+  all_expected_prompt_types_present: True
+  degradation_sign_check_passed: True
+  hidden_state_shape: (36, 2560)
+  splits_grouped_by_family_id: True
+  train_only_standardization: True
+
+Primary Fixed-Alpha Results (alpha = 1.0)
+  false_pressure_delta: best Pearson layer 35 (late), r=0.9436, rho=0.9707, R2=0.8790, relative_MSE_improvement=0.8856
+  emotional_pressure_delta: best Pearson layer 35 (late), r=0.8670, rho=0.9405, R2=0.7364, relative_MSE_improvement=0.7508
+  closed_context_delta: best Pearson layer 35 (late), r=0.9137, rho=0.9524, R2=0.7936, relative_MSE_improvement=0.8049
+  distractor_delta: best Pearson layer 35 (late), r=0.9209, rho=0.9174, R2=0.8306, relative_MSE_improvement=0.8398
+
+Answers To Requested Questions
+  The strongest family-held-out degradation prediction comes from false_pressure_delta at layer 35 with Pearson r=0.9436.
+  Closed-context does not remain the strongest condition under the primary fixed-alpha ridge probe.
+  False-pressure still has meaningful predictive signal; its best Pearson is 0.9436 and best R2 is 0.8790.
+  Emotional-pressure remains weaker than closed-context; its best Pearson is 0.8670.
+  Distractor is not clearly weaker than the pressure-like conditions.
+  Best layers do not cluster around 31-34; 0 of 16 fixed-alpha best-layer selections land in that late-layer range.
+  Ridge beats the mean-only baseline for at least some fixed-alpha condition/layer combinations.
+  If Pearson/Spearman are positive but R2 remains negative, the right interpretation is that the probe recovers ordering signal more reliably than exact degradation magnitudes.
+
+Fixed vs Nested Alpha
+  false_pressure_delta at fixed best layer 35: fixed_alpha and nested_alpha are broadly consistent. Fixed Pearson=0.9436, nested Pearson=0.9436, nested mean alpha=0.0100.
+  emotional_pressure_delta at fixed best layer 35: fixed_alpha and nested_alpha are broadly consistent. Fixed Pearson=0.8670, nested Pearson=0.8671, nested mean alpha=0.0100.
+  closed_context_delta at fixed best layer 35: fixed_alpha and nested_alpha are broadly consistent. Fixed Pearson=0.9137, nested Pearson=0.9138, nested mean alpha=0.0100.
+  distractor_delta at fixed best layer 35: fixed_alpha and nested_alpha are broadly consistent. Fixed Pearson=0.9209, nested Pearson=0.9209, nested mean alpha=0.0100.
+
+Interpretation
+  A successful ridge probe shows linearly decodable information about degradation in the hidden-state deltas under family-held-out evaluation.
+  It does not establish causality; it only shows that hidden-state deltas contain predictive information about later behavioral margin changes.

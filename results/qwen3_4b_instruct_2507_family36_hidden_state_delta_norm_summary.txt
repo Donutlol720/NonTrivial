@@ -1,0 +1,15 @@
+Qwen3-4B-Instruct-2507 Family-36 Hidden-State Delta Norm Summary
+
+families: 36
+hidden_state_shape: (36, 2560)
+
+Peak Mean Delta Norm By Condition
+  false_pressure_delta: layer 34, mean=73.2376, median=71.7893, min=63.4152, max=91.5380
+  emotional_pressure_delta: layer 34, mean=92.9088, median=92.4513, min=81.9948, max=109.5504
+  true_pressure_delta: layer 34, mean=74.1731, median=73.9612, min=61.7205, max=86.0552
+  distractor_delta: layer 34, mean=48.6712, median=48.3416, min=41.9940, max=63.3276
+  closed_context_delta: layer 34, mean=85.6352, median=83.4543, min=76.3753, max=118.4787
+
+Interpretation
+  Larger delta norms mean larger hidden-state movement away from the neutral evidence prompt at that layer.
+  This analysis is descriptive only; it does not ask whether the movement is aligned or behaviorally predictive.

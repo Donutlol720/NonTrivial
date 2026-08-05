@@ -1,0 +1,26 @@
+Qwen3-4B-Instruct-2507 Family-36 Hidden/Behavior Alignment Summary
+
+input_jsonl: state_logits_qwen3_4b_instruct_2507_all_families.jsonl
+hidden_state_shape: (36, 2560)
+
+Best Correlation By Condition
+  false_pressure_delta vs -delta_false_pressure: best Pearson layer 32 (late), r=0.7285; best Spearman layer 32 (late), rho=0.7022
+  emotional_pressure_delta vs -delta_emotional_pressure: best Pearson layer 30 (late), r=0.3441; best Spearman layer 32 (late), rho=0.4386
+  closed_context_delta vs -delta_closed_context: best Pearson layer 32 (late), r=0.8443; best Spearman layer 32 (late), rho=0.6703
+  distractor_delta vs abs(delta_distractor): best Pearson layer 35 (late), r=0.4656; best Spearman layer 35 (late), rho=0.3820
+
+Pressure Direction Consistency
+  false_pressure_delta: best layer 10 (early), mean leave-one-out cosine=0.9514
+  emotional_pressure_delta: best layer 15 (middle), mean leave-one-out cosine=0.9741
+  closed_context_delta: best layer 10 (early), mean leave-one-out cosine=0.9654
+
+Answers To Requested Questions
+  Larger emotional-pressure shifts do predict larger emotional margin drops overall; the strongest alignment is Pearson r=0.3441 and Spearman rho=0.4386.
+  Larger closed-context shifts do predict larger closed-context margin drops overall; the strongest alignment is Pearson r=0.8443 and Spearman rho=0.6703.
+  False-pressure shifts are behaviorally mixed rather than uniformly weak: best false-pressure Pearson r=0.7285, vs emotional r=0.3441, closed-context r=0.8443. That means false-pressure alignment is stronger than emotional-pressure alignment, but weaker than closed-context alignment.
+  Pressure directions are highly consistent across families, with best leave-one-out mean cosines of 0.9514 (false), 0.9741 (emotional), and 0.9654 (closed-context).
+  The damaging conditions do not behave uniformly: closed-context shows stronger hidden/behavior alignment than the more robust retrieved-evidence false-pressure condition, while emotional pressure shows weaker alignment.
+
+Interpretation
+  Positive Pearson/Spearman values mean larger hidden-state shifts are associated with larger behavioral margin degradation across families.
+  Higher leave-one-out direction cosine means family-level deltas point in a more shared representational direction.

@@ -1,0 +1,295 @@
+Probe 5 cross-condition harmfulness permutation-label control
+
+hidden_state_shape: (36, 2560)
+evaluation_path: probe5.run_pair (same as original Probe 5 run)
+label_shuffle_scope: training_labels_within_each_leave_one_family_out_fold
+source_ref: C:\Users\ericl\NonTrivial\results\probe5_cross_condition_layerwise.csv
+
+[20:primary] evidence_false_belief_pressure -> evidence_false_belief_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 35
+  real_best_balanced_accuracy        = 0.812500
+  permute_mean_best_balanced_accuracy = 0.516667
+  permute_p95_best_balanced_accuracy  = 0.669792
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] evidence_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 32
+  real_best_balanced_accuracy        = 0.923077
+  permute_mean_best_balanced_accuracy = 0.516923
+  permute_p95_best_balanced_accuracy  = 0.639039
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] evidence_false_belief_pressure -> closed_context_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 20
+  real_best_balanced_accuracy        = 0.806452
+  permute_mean_best_balanced_accuracy = 0.513548
+  permute_p95_best_balanced_accuracy  = 0.692097
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] evidence_emotional_pressure -> evidence_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 34
+  real_best_balanced_accuracy        = 0.916667
+  permute_mean_best_balanced_accuracy = 0.520833
+  permute_p95_best_balanced_accuracy  = 0.647916
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] evidence_emotional_pressure -> evidence_emotional_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 14
+  real_best_balanced_accuracy        = 0.811538
+  permute_mean_best_balanced_accuracy = 0.478654
+  permute_p95_best_balanced_accuracy  = 0.654423
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] evidence_emotional_pressure -> closed_context_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 35
+  real_best_balanced_accuracy        = 0.838710
+  permute_mean_best_balanced_accuracy = 0.497258
+  permute_p95_best_balanced_accuracy  = 0.670968
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] closed_context_false_belief_pressure -> evidence_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.729167
+  permute_mean_best_balanced_accuracy = 0.485417
+  permute_p95_best_balanced_accuracy  = 0.562500
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] closed_context_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.750000
+  permute_mean_best_balanced_accuracy = 0.498654
+  permute_p95_best_balanced_accuracy  = 0.563076
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:primary] closed_context_false_belief_pressure -> closed_context_false_belief_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 1
+  real_best_balanced_accuracy        = 0.700000
+  permute_mean_best_balanced_accuracy = 0.486774
+  permute_p95_best_balanced_accuracy  = 0.557419
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_false_belief_pressure -> evidence_false_belief_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 34
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.533333
+  permute_p95_best_balanced_accuracy  = 0.709375
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 33
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.531111
+  permute_p95_best_balanced_accuracy  = 0.611389
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_false_belief_pressure -> closed_context_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 18
+  real_best_balanced_accuracy        = 0.863636
+  permute_mean_best_balanced_accuracy = 0.491364
+  permute_p95_best_balanced_accuracy  = 0.640909
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_emotional_pressure -> evidence_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 32
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.493750
+  permute_p95_best_balanced_accuracy  = 0.690625
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_emotional_pressure -> evidence_emotional_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 11
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.477778
+  permute_p95_best_balanced_accuracy  = 0.630834
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] evidence_emotional_pressure -> closed_context_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 21
+  real_best_balanced_accuracy        = 0.909091
+  permute_mean_best_balanced_accuracy = 0.464545
+  permute_p95_best_balanced_accuracy  = 0.677272
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] closed_context_false_belief_pressure -> evidence_false_belief_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.875000
+  permute_mean_best_balanced_accuracy = 0.437500
+  permute_p95_best_balanced_accuracy  = 0.605209
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] closed_context_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 22
+  real_best_balanced_accuracy        = 0.900000
+  permute_mean_best_balanced_accuracy = 0.465833
+  permute_p95_best_balanced_accuracy  = 0.552222
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[20:strict] closed_context_false_belief_pressure -> closed_context_false_belief_pressure (within, repeats=20, null_type=best_layer_fixed):
+  real_best_layer                    = 26
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.415454
+  permute_p95_best_balanced_accuracy  = 0.655000
+  empirical_p_value                  = 0.047619
+  exceeds_p95                        = 1
+
+[100:primary] evidence_false_belief_pressure -> evidence_false_belief_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 35
+  real_best_balanced_accuracy        = 0.812500
+  permute_mean_best_balanced_accuracy = 0.504167
+  permute_p95_best_balanced_accuracy  = 0.605209
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] evidence_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 32
+  real_best_balanced_accuracy        = 0.923077
+  permute_mean_best_balanced_accuracy = 0.484231
+  permute_p95_best_balanced_accuracy  = 0.611538
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] evidence_false_belief_pressure -> closed_context_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 20
+  real_best_balanced_accuracy        = 0.806452
+  permute_mean_best_balanced_accuracy = 0.520484
+  permute_p95_best_balanced_accuracy  = 0.710483
+  empirical_p_value                  = 0.019802
+  exceeds_p95                        = 1
+
+[100:primary] evidence_emotional_pressure -> evidence_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 34
+  real_best_balanced_accuracy        = 0.916667
+  permute_mean_best_balanced_accuracy = 0.492917
+  permute_p95_best_balanced_accuracy  = 0.625000
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] evidence_emotional_pressure -> evidence_emotional_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 14
+  real_best_balanced_accuracy        = 0.811538
+  permute_mean_best_balanced_accuracy = 0.487000
+  permute_p95_best_balanced_accuracy  = 0.603846
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] evidence_emotional_pressure -> closed_context_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 35
+  real_best_balanced_accuracy        = 0.838710
+  permute_mean_best_balanced_accuracy = 0.523097
+  permute_p95_best_balanced_accuracy  = 0.704194
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] closed_context_false_belief_pressure -> evidence_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.729167
+  permute_mean_best_balanced_accuracy = 0.492083
+  permute_p95_best_balanced_accuracy  = 0.562500
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] closed_context_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.750000
+  permute_mean_best_balanced_accuracy = 0.491654
+  permute_p95_best_balanced_accuracy  = 0.550000
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:primary] closed_context_false_belief_pressure -> closed_context_false_belief_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 1
+  real_best_balanced_accuracy        = 0.700000
+  permute_mean_best_balanced_accuracy = 0.479581
+  permute_p95_best_balanced_accuracy  = 0.567742
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_false_belief_pressure -> evidence_false_belief_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 34
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.525000
+  permute_p95_best_balanced_accuracy  = 0.625000
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 33
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.512334
+  permute_p95_best_balanced_accuracy  = 0.611389
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_false_belief_pressure -> closed_context_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 18
+  real_best_balanced_accuracy        = 0.863636
+  permute_mean_best_balanced_accuracy = 0.519818
+  permute_p95_best_balanced_accuracy  = 0.681818
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_emotional_pressure -> evidence_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 32
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.482083
+  permute_p95_best_balanced_accuracy  = 0.729167
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_emotional_pressure -> evidence_emotional_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 11
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.469667
+  permute_p95_best_balanced_accuracy  = 0.641389
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] evidence_emotional_pressure -> closed_context_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 21
+  real_best_balanced_accuracy        = 0.909091
+  permute_mean_best_balanced_accuracy = 0.502727
+  permute_p95_best_balanced_accuracy  = 0.718182
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] closed_context_false_belief_pressure -> evidence_false_belief_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 23
+  real_best_balanced_accuracy        = 0.875000
+  permute_mean_best_balanced_accuracy = 0.483333
+  permute_p95_best_balanced_accuracy  = 0.626042
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] closed_context_false_belief_pressure -> evidence_emotional_pressure (cross, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 22
+  real_best_balanced_accuracy        = 0.900000
+  permute_mean_best_balanced_accuracy = 0.476500
+  permute_p95_best_balanced_accuracy  = 0.644444
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+
+[100:strict] closed_context_false_belief_pressure -> closed_context_false_belief_pressure (within, repeats=100, null_type=best_layer_fixed):
+  real_best_layer                    = 26
+  real_best_balanced_accuracy        = 1.000000
+  permute_mean_best_balanced_accuracy = 0.452454
+  permute_p95_best_balanced_accuracy  = 0.609091
+  empirical_p_value                  = 0.009901
+  exceeds_p95                        = 1
+

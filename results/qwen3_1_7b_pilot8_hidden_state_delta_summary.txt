@@ -1,0 +1,24 @@
+Qwen3 1.7B Pilot-8 Hidden-State Delta Summary
+
+families: 8
+hidden_state_shape: (28, 2048)
+
+all 8 families
+  peak false_pressure_delta norm: layer 26, mean=434.0867, median=441.7809
+  peak closed_context_delta norm: layer 26, mean=596.9770, median=589.1149
+  peak cosine(false_pressure_delta, closed_context_delta): layer 1, mean=0.7343, median=0.7363
+
+excluding policy_library_checkout_003
+  peak false_pressure_delta norm: layer 26, mean=433.6314, median=446.2879
+  peak closed_context_delta norm: layer 26, mean=600.9812, median=589.8666
+  peak cosine(false_pressure_delta, closed_context_delta): layer 1, mean=0.7328, median=0.7324
+
+policy_library_checkout_003 alone
+  peak false_pressure_delta norm: layer 26, mean=437.2740, median=437.2740
+  peak closed_context_delta norm: layer 26, mean=568.9478, median=568.9478
+  peak cosine(false_pressure_delta, closed_context_delta): layer 27, mean=0.7630, median=0.7630
+
+Interpretation Notes
+  Larger delta norms indicate larger hidden-state movement away from evidence_neutral at that layer.
+  Cosines near +1 indicate similar directional shifts; cosines near 0 indicate weak alignment; cosines near -1 indicate opposing shifts.
+  The outlier-aware split lets you see whether policy_library_checkout_003 is driving the pilot-wide pattern or just amplifying it.

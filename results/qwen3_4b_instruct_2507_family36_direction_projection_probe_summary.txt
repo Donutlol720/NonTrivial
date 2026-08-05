@@ -1,0 +1,17 @@
+Qwen3-4B-Instruct-2507 Family-36 Direction Projection Probe
+
+input_jsonl: state_logits_qwen3_4b_instruct_2507_all_families.jsonl
+hidden_state_shape: (36, 2560)
+split_strategy: leave-one-family-out
+feature_preprocessing: train-family standardization applied before mean-direction construction and held-out projection
+
+Best Layerwise Correlations
+  false_pressure_delta projection vs -delta_false_pressure: best Pearson layer 32 (late), r=0.3576; best Spearman layer 32 (late), rho=0.3251
+  emotional_pressure_delta projection vs -delta_emotional_pressure: best Pearson layer 20 (middle), r=0.4422; best Spearman layer 20 (middle), rho=0.4644
+  closed_context_delta projection vs -delta_closed_context: best Pearson layer 28 (late), r=0.4988; best Spearman layer 28 (late), rho=0.4752
+  distractor_delta projection vs abs(delta_distractor): best Pearson layer 15 (middle), r=0.2820; best Spearman layer 27 (late), rho=0.3095
+
+Interpretation
+  The strongest direction-projection alignment appears for closed_context_delta at layer 28 (late) with Pearson r=0.4988.
+  Positive correlation means families that move farther along the shared training-family direction also show larger held-out behavioral degradation.
+  Because the direction and scaler are fitted without the held-out family, this probe directly tests whether the shared pressure direction generalizes across families rather than merely describing the full dataset.

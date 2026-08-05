@@ -1,0 +1,25 @@
+Qwen3-4B-Instruct-2507 Family-36 Analysis 8 Robustness Summary
+
+hidden_state_shape: (36, 2560)
+
+Core Robustness Checks
+  Closed-context alignment survives removing logic_tournament_036: best Pearson r=0.8443 at layer 32 (all 36) versus r=0.7587 at layer 32 (excluding flip family).
+  Closed-context also survives top-outlier removal: excluding the top-1 absolute closed-context delta family gives r=0.7587 at layer 32, and excluding the top-3 gives r=0.6413 at layer 32.
+  False-pressure alignment also survives outlier removal: all 36 gives r=0.7285 at layer 32; excluding the flip family gives r=0.7582; excluding top-1 false-pressure outlier gives r=0.7459; excluding top-3 gives r=0.6329.
+  Emotional-pressure remains weaker than both closed-context and false-pressure: best Pearson r=0.3441 versus false-pressure r=0.7285 and closed-context r=0.8443.
+  The strongest hidden/behavior alignment does stay concentrated in late layers. Closed-context late-layer stability across leave-one-family-out scopes is strong.
+
+Leave-One-Family-Out Ranges
+  Closed-context best Pearson range: 0.7587 to 0.8641.
+  False-pressure best Pearson range: 0.6521 to 0.7582.
+  Emotional-pressure best Pearson range: 0.3168 to 0.4332.
+
+Sensitivity Subgroups
+  false_pressure_delta: high-sensitivity families (18) vs low-sensitivity families (18) separate most at layers 32 (late, gap=7.1328), 33 (late, gap=6.4988), 31 (late, gap=6.4275). High-sensitivity mean behavioral delta=-1.1901, low-sensitivity mean behavioral delta=1.5642. Flips high/low: logic_tournament_036 / none.
+  emotional_pressure_delta: high-sensitivity families (18) vs low-sensitivity families (18) separate most at layers 33 (late, gap=5.9390), 34 (late, gap=5.7130), 32 (late, gap=5.5151). High-sensitivity mean behavioral delta=-2.1155, low-sensitivity mean behavioral delta=0.1693. Flips high/low: logic_tournament_036 / none.
+  closed_context_delta: high-sensitivity families (18) vs low-sensitivity families (18) separate most at layers 32 (late, gap=8.5586), 31 (late, gap=8.2010), 33 (late, gap=8.0153). High-sensitivity mean behavioral delta=-3.6753, low-sensitivity mean behavioral delta=-0.2222. Flips high/low: logic_tournament_036 / none.
+
+Bottom Line
+  The Analysis 7 closed-context conclusion should not be weakened as outlier-driven.
+  False-pressure alignment is robust but consistently weaker than closed-context, which matches the behavioral result that retrieved evidence resists direct false-belief pressure better than the closed-context baseline does.
+  Emotional-pressure still moves hidden states substantially, but its hidden/behavior coupling remains the weakest of the three pressure-like conditions after robustness checks.

@@ -1,0 +1,31 @@
+Probe 3 Pressure-vs-Distractor Classification Summary
+
+hidden_state_shape: (36, 2560)
+n_examples_total: 180
+n_families: 36
+split_strategy: leave-one-family-out
+feature_definition: delta_to_family_neutral
+classifier: logistic_regression_l2_balanced_fixed_C
+
+Best Layerwise Results
+  balanced_accuracy: layer 0 (early), value=1.0000
+  AUROC: layer 0 (early), value=1.0000
+  average_precision: layer 1 (early), value=1.0000
+  F1: layer 0 (early), value=1.0000
+
+Answers To Requested Questions
+  Pressure-like deltas are distinguishable from distractor deltas.
+  The best-performing layers are early / early / early by balanced accuracy / AUROC / average precision.
+  Performance remains strong under family-held-out evaluation.
+  If family-held-out performance is well above the majority-class baseline, that supports pressure-specific representation rather than generic non-neutral movement.
+  Pressure conditions mistaken for distractor at the best balanced-accuracy layer:
+    closed_context_false_belief_pressure: 0/36 mistaken for distractor
+    evidence_emotional_pressure: 0/36 mistaken for distractor
+    evidence_false_belief_pressure: 0/36 mistaken for distractor
+    evidence_true_belief_pressure: 0/36 mistaken for distractor
+  Distractor mistaken for pressure at the best balanced-accuracy layer:
+    evidence_distractor_neutral: 0/36 mistaken for pressure
+
+Interpretation
+  A successful classifier means pressure-like deltas are linearly decodable as distinct from distractor deltas under family-held-out evaluation.
+  It does not establish causality or intervention success.

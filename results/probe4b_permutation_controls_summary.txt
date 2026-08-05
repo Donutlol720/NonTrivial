@@ -1,0 +1,41 @@
+Probe 4B / Probe 5 permutation-label controls
+
+repeats: 20
+hidden_state_shape: (36, 2560)
+
+[4B:within_condition] primary evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.875000 at layer 35
+  permute mean = 0.704167
+  permute p95  = 0.754167
+  empirical p  = 0.047619
+
+[4B:within_condition] primary evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 0.853846 at layer 11
+  permute mean = 0.670385
+  permute p95  = 0.740385
+  empirical p  = 0.047619
+
+[4B:within_condition] primary closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.838710 at layer 18
+  permute mean = 0.738065
+  permute p95  = 0.822581
+  empirical p  = 0.047619
+
+[4B:within_condition] strict evidence_false_belief_pressure -> evidence_false_belief_pressure:
+  real best BA = 0.895833 at layer 21
+  permute mean = 0.782292
+  permute p95  = 0.834375
+  empirical p  = 0.047619
+
+[4B:within_condition] strict evidence_emotional_pressure -> evidence_emotional_pressure:
+  real best BA = 1.000000 at layer 11
+  permute mean = 0.730000
+  permute p95  = 0.789167
+  empirical p  = 0.047619
+
+[4B:within_condition] strict closed_context_false_belief_pressure -> closed_context_false_belief_pressure:
+  real best BA = 0.954545 at layer 35
+  permute mean = 0.750909
+  permute p95  = 0.818182
+  empirical p  = 0.047619
+

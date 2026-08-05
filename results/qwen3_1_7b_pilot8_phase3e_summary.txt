@@ -1,0 +1,24 @@
+Qwen3 1.7B Pilot-8 Phase 3E Summary
+
+hidden_state_shape: (28, 2048)
+
+false_pressure_delta_norm vs abs(delta_false_pressure)
+  best positive correlation: layer 0, r=0.7978
+  most negative correlation: layer 14, r=-0.6134
+
+closed_context_delta_norm vs abs(delta_closed_context)
+  best positive correlation: layer 0, r=0.6515
+  most negative correlation: layer 1, r=-0.3460
+
+distractor_delta_norm vs abs(delta_distractor)
+  best positive correlation: layer 21, r=0.7320
+  most negative correlation: layer 4, r=-0.6178
+
+False-Pressure Direction Consistency
+  highest mean cosine to all-8 mean direction: layer 6, mean_cosine=0.9544
+  highest mean cosine to leave-one-out mean direction: layer 6, mean_cosine=0.9402
+  lowest mean cosine to leave-one-out mean direction: layer 24, mean_cosine=0.7730
+
+Interpretation Notes
+  Positive correlation means larger hidden-state movement is associated with larger absolute behavioral margin change across families.
+  Higher direction-consistency cosine means the family-level false-pressure deltas point in a more shared representational direction at that layer.

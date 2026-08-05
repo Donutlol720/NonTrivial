@@ -1,0 +1,33 @@
+Qwen3-4B-Instruct-2507 Family-36 Hidden-State Cosine Summary
+
+families: 36
+hidden_state_shape: (36, 2560)
+
+Overall Mean Cosine By Pair
+  false_pressure_vs_true_pressure: mean=0.7282
+  false_pressure_vs_emotional_pressure: mean=0.7247
+  false_pressure_vs_closed_context: mean=0.7024
+  false_pressure_vs_distractor: mean=0.3035
+  emotional_pressure_vs_closed_context: mean=0.5254
+  emotional_pressure_vs_distractor: mean=0.4044
+  closed_context_vs_distractor: mean=0.2320
+
+Peak Mean Cosine By Pair
+  false_pressure_vs_true_pressure: layer 11 (early), mean=0.9564, median=0.9581, std=0.0153, min=0.9265, max=0.9832
+  false_pressure_vs_emotional_pressure: layer 3 (early), mean=0.8354, median=0.8476, std=0.0326, min=0.7399, max=0.8781
+  false_pressure_vs_closed_context: layer 22 (middle), mean=0.8434, median=0.8416, std=0.0351, min=0.7619, max=0.9044
+  false_pressure_vs_distractor: layer 35 (late), mean=0.4718, median=0.5030, std=0.0927, min=0.1763, max=0.6561
+  emotional_pressure_vs_closed_context: layer 21 (middle), mean=0.7280, median=0.7355, std=0.0513, min=0.5911, max=0.8512
+  emotional_pressure_vs_distractor: layer 35 (late), mean=0.5678, median=0.5914, std=0.0990, min=0.2240, max=0.6777
+  closed_context_vs_distractor: layer 35 (late), mean=0.3666, median=0.3775, std=0.0822, min=0.1568, max=0.5607
+
+Answers To Requested Questions
+  Direct false pressure is directionally closest overall to true pressure (overall mean cosine=0.7282).
+  Emotional pressure and closed-context pressure show moderate alignment overall (mean cosine=0.5254).
+  Distractor effects are directionally separate from pressure effects: emotional vs distractor mean=0.4044, closed-context vs distractor mean=0.2320, false pressure vs distractor mean=0.3035.
+  The strongest directional similarity occurs in the early layers: false_pressure_vs_true_pressure peaks at layer 11 with mean cosine=0.9564.
+
+Interpretation
+  Cosines near +1 indicate similar directional hidden-state shifts relative to the neutral evidence prompt.
+  Cosines near 0 indicate weak directional alignment, even if both conditions have large delta norms.
+  This analysis is descriptive only; it does not establish causal mechanism or behavioral predictiveness.

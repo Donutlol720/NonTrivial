@@ -1,0 +1,61 @@
+Probe 5 Cross-Condition Harmfulness Generalization Summary
+
+hidden_state_shape: (36, 2560)
+split_strategy: leave-one-family-out within target, train excludes same-family source examples
+feature_definition: delta_to_family_neutral
+classifier: logistic_regression_l2_balanced_fixed_C
+
+Label distributions
+  primary:
+    evidence_false_belief_pressure: n=36 harmful=12 nonharmful=24 harmful_rate=0.3333
+    evidence_emotional_pressure: n=36 harmful=26 nonharmful=10 harmful_rate=0.7222
+    closed_context_false_belief_pressure: n=36 harmful=31 nonharmful=5 harmful_rate=0.8611
+  strict:
+    evidence_false_belief_pressure: n=28 harmful=4 nonharmful=24 harmful_rate=0.1429  threshold=-2.453125
+    evidence_emotional_pressure: n=19 harmful=9 nonharmful=10 harmful_rate=0.4737  threshold=-1.796875
+    closed_context_false_belief_pressure: n=16 harmful=11 nonharmful=5 harmful_rate=0.6875  threshold=-2.640625
+
+Best layer per pair by balanced accuracy
+  [primary] evidence_false_belief_pressure -> evidence_false_belief_pressure: layer 35 balanced_accuracy=0.812500 (baseline=0.5)
+  [primary] evidence_false_belief_pressure -> evidence_emotional_pressure: layer 32 balanced_accuracy=0.923077 (baseline=0.5)
+  [primary] evidence_false_belief_pressure -> closed_context_false_belief_pressure: layer 20 balanced_accuracy=0.806452 (baseline=0.5)
+  [primary] evidence_emotional_pressure -> evidence_false_belief_pressure: layer 34 balanced_accuracy=0.916667 (baseline=0.5)
+  [primary] evidence_emotional_pressure -> evidence_emotional_pressure: layer 14 balanced_accuracy=0.811538 (baseline=0.5)
+  [primary] evidence_emotional_pressure -> closed_context_false_belief_pressure: layer 35 balanced_accuracy=0.838710 (baseline=0.5)
+  [primary] closed_context_false_belief_pressure -> evidence_false_belief_pressure: layer 23 balanced_accuracy=0.729167 (baseline=0.5)
+  [primary] closed_context_false_belief_pressure -> evidence_emotional_pressure: layer 23 balanced_accuracy=0.750000 (baseline=0.5)
+  [primary] closed_context_false_belief_pressure -> closed_context_false_belief_pressure: layer 1 balanced_accuracy=0.700000 (baseline=0.5)
+  [strict] evidence_false_belief_pressure -> evidence_false_belief_pressure: layer 34 balanced_accuracy=1.000000 (baseline=0.5)
+  [strict] evidence_false_belief_pressure -> evidence_emotional_pressure: layer 33 balanced_accuracy=1.000000 (baseline=0.5)
+  [strict] evidence_false_belief_pressure -> closed_context_false_belief_pressure: layer 18 balanced_accuracy=0.863636 (baseline=0.5)
+  [strict] evidence_emotional_pressure -> evidence_false_belief_pressure: layer 32 balanced_accuracy=1.000000 (baseline=0.5)
+  [strict] evidence_emotional_pressure -> evidence_emotional_pressure: layer 11 balanced_accuracy=1.000000 (baseline=0.5)
+  [strict] evidence_emotional_pressure -> closed_context_false_belief_pressure: layer 21 balanced_accuracy=0.909091 (baseline=0.5)
+  [strict] closed_context_false_belief_pressure -> evidence_false_belief_pressure: layer 23 balanced_accuracy=0.875000 (baseline=0.5)
+  [strict] closed_context_false_belief_pressure -> evidence_emotional_pressure: layer 22 balanced_accuracy=0.900000 (baseline=0.5)
+  [strict] closed_context_false_belief_pressure -> closed_context_false_belief_pressure: layer 26 balanced_accuracy=1.000000 (baseline=0.5)
+
+Interpretation
+  Within-condition baselines (source == target):
+    evidence_false_belief_pressure -> evidence_false_belief_pressure: best layer 35, balanced_accuracy=0.8125
+    evidence_emotional_pressure -> evidence_emotional_pressure: best layer 14, balanced_accuracy=0.8115
+    closed_context_false_belief_pressure -> closed_context_false_belief_pressure: best layer 1, balanced_accuracy=0.7000
+  Cross-condition transfer (source != target):
+    evidence_false_belief_pressure -> evidence_emotional_pressure: best layer 32, balanced_accuracy=0.9231
+    evidence_emotional_pressure -> evidence_false_belief_pressure: best layer 34, balanced_accuracy=0.9167
+    evidence_emotional_pressure -> closed_context_false_belief_pressure: best layer 35, balanced_accuracy=0.8387
+    evidence_false_belief_pressure -> closed_context_false_belief_pressure: best layer 20, balanced_accuracy=0.8065
+    closed_context_false_belief_pressure -> evidence_emotional_pressure: best layer 23, balanced_accuracy=0.7500
+    closed_context_false_belief_pressure -> evidence_false_belief_pressure: best layer 23, balanced_accuracy=0.7292
+
+Key questions
+  Harmfulness generalizes across pressure conditions: cross-condition performance is strong and close to within-condition baselines.
+
+Best layer ranges
+  early layers (< 12) best layer count: 2
+  mid layers (12-24) best layer count: 8
+  late layers (>= 24) best layer count: 8
+
+Important caveat
+  Positive cross-condition transfer means the harmful/nonharmful representation is condition-agnostic to some degree.
+  It does not prove causal sycophancy mechanisms or intervention-ready handles.
