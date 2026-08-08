@@ -1,0 +1,21 @@
+{
+  "description": "Scale-up run with 7B Qwen3-Instruct on a CUDA machine. Activations and outputs use a new experiment name so the 4B canonical extraction is never overwritten.",
+  "model": "Qwen/Qwen3-7B-Instruct",
+  "prompt_dataset": "prompts/expanded_matched_prefix_hq80_v1.jsonl",
+  "device_default": "cuda",
+  "dtype_default_hint": "auto (float16 on CUDA for weights; hidden states saved float32 on CPU)",
+  "activation_root": "activations/qwen3_7b_hq80_v1",
+  "behavior_jsonl": "outputs/qwen3_7b_hq80_v1_behavior_logits.jsonl",
+  "results_dir": "results",
+  "permutations": 100,
+  "max_families": -1,
+  "integrity_requirements": {
+    "raw_prefix_match_at_S0_S1_S2": "100%",
+    "token_prefix_match_at_S0_S1_S2": "100%",
+    "shared_anchor_delta_norm_max_at_S0_S1_S2": "1e-4",
+    "hidden_states_layer_aliasing_check_required": true,
+    "hidden_states_l35_minus_l0_l2_norm_min_before_full_run": 50.0,
+    "before_full_640_run_do_family_8_smoke_test": true,
+    "CUDA_extra_note": "If output_hidden_states=True returns aliased buffers (all layers identical per anchor), switch extraction to forward-hook based per-layer clone-to-CPU materialization, as MPS/PyTorch in some versions shares buffers."
+  }
+}

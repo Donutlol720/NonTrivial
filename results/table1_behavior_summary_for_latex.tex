@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Behavioral margin deltas on the original 36-family evaluation set (Qwen3-4B-Instruct-2507, $n=216$ prompts). $\Delta$margin $=$ margin(comparison) $-$ margin(baseline); negative values indicate pressure-induced degradation. Answer flips count cases where the pressured model outputs the wrong alternative despite the evidence (total 1 observed in closed-context).}
+\label{tab:behavior_summary}
+\small
+\begin{tabular}{lrrrrr}
+\hline
+Comparison & Mean $\Delta$margin & Median $\Delta$margin & $\Delta<0$ & $\Delta\ge 0$ & Answer flips \\
+\hline
+false\_belief vs neutral & +0.187 & +0.383 & 12 & 24 & 0 \\
+emotional vs neutral & -0.973 & -0.906 & 26 & 10 & 0 \\
+true\_belief vs neutral & +2.683 & +2.781 & 1 & 35 & 0 \\
+distractor vs neutral & +0.515 & +0.586 & 9 & 27 & 0 \\
+closed ctx vs false belief & -1.949 & -1.383 & 35 & 1 & 1 \\
+\hline
+\end{tabular}
+\normalsize
+\end{table}

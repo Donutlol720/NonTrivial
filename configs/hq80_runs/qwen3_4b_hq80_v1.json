@@ -1,0 +1,20 @@
+{
+  "description": "Canonical 4B Qwen matched-prefix HQ80 run. This produced the paper-Table-1 36-family baseline and is the baseline 640-prompt activation extraction on CPU float32 (or GPU with verified non-aliased hidden states via per-layer forward hooks).",
+  "model": "Qwen/Qwen3-4B-Instruct-2507",
+  "prompt_dataset": "prompts/expanded_matched_prefix_hq80_v1.jsonl",
+  "device_default": "cpu",
+  "dtype_default_hint": "auto (float16 on mps/cuda, float32 on cpu)",
+  "activation_root": "activations/qwen3_4b_hq80_matched_prefix_v1",
+  "behavior_jsonl": "outputs/qwen3_4b_hq80_matched_prefix_v1_behavior_logits.jsonl",
+  "results_dir": "results",
+  "permutations": 100,
+  "max_families": -1,
+  "integrity_requirements": {
+    "raw_prefix_match_at_S0_S1_S2": "100% families for all 7 non-neutral conditions",
+    "token_prefix_match_at_S0_S1_S2": "100%",
+    "shared_anchor_delta_norm_max_at_S0_S1_S2": "1e-4",
+    "hidden_states_layer_aliasing_check_required": true,
+    "hidden_states_l35_minus_l0_l2_norm_min_before_full_run": 50.0,
+    "before_full_640_run_do_family_8_smoke_test": true
+  }
+}

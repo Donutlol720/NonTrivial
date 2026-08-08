@@ -1,0 +1,59 @@
+Probe 6B: matched-prefix early-position harmfulness detection
+
+Matched-prefix format:
+  Evidence -> Question -> Choices -> User message -> Answer
+  Shared-prefix anchors: S0/S1/S2
+Families: 36
+Layer count: 36
+Detectable threshold: balanced accuracy >= 0.55
+Support rule: analyses with fewer than 4 total examples in a class are marked UNSUP.
+
+== A. Pooled harmful vs nonharmful pressure ==
+pair                                                                          S0: e      S1: e      S2: e      S3: e      S4: f
+all_conditions_pooled                                                     0.839@L07  0.964@L19  0.879@L05  0.661@L15  0.676@L10
+
+== B. Within-condition harmfulness ==
+pair                                                                          S0: e      S1: e      S2: e      S3: e      S4: f
+closed_context_false_belief_pressure                                      0.884@L21  0.868@L18  0.835@L06  0.723@L29  0.723@L00
+evidence_emotional_pressure                                                 UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+evidence_false_belief_pressure                                              UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+
+== C. Cross-condition harmfulness transfer ==
+pair                                                                          S0: e      S1: e      S2: e      S3: e      S4: f
+closed_context_false_belief_pressure_to_evidence_emotional_pressure       0.636@L18  0.985@L17  0.742@L05  0.652@L26  0.697@L15
+closed_context_false_belief_pressure_to_evidence_false_belief_pressure    0.735@L11  0.985@L01  0.750@L17  0.765@L15  0.735@L09
+evidence_emotional_pressure_to_closed_context_false_belief_pressure         UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+evidence_emotional_pressure_to_evidence_false_belief_pressure               UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+evidence_false_belief_pressure_to_closed_context_false_belief_pressure      UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+evidence_false_belief_pressure_to_evidence_emotional_pressure               UNSUP      UNSUP      UNSUP      UNSUP      UNSUP  
+
+== D. Neutral vulnerability baseline ==
+pair                                                                          S0: e      S1: e      S2: e      S3: e      S4: f
+closed_context_false_belief_pressure                                      0.839@L22  0.606@L02  0.658@L02      -          -    
+evidence_emotional_pressure                                                 UNSUP      UNSUP      UNSUP        -          -    
+evidence_false_belief_pressure                                              UNSUP      UNSUP      UNSUP        -          -    
+
+== Main questions ==
+Q1. Do shared-prefix anchors S0/S1/S2 show only vulnerability prediction, not condition-delta detection?
+  No clean separation: delta detection is still present at shared-prefix anchors (S0: end of evidence block BA 0.839, S1: end of question block BA 0.964, S2: end of answer choices BA 0.879).
+    Vulnerability: closed_context_false_belief_pressure @ S0: end of evidence block BA 0.839 @ layer 22
+    Vulnerability: closed_context_false_belief_pressure @ S1: end of question block BA 0.606 @ layer 2
+    Vulnerability: closed_context_false_belief_pressure @ S2: end of answer choices BA 0.658 @ layer 2
+
+Q2. After condition-specific pressure appears at S3, does harmfulness become detectable before ANSWER?
+  Yes. S3 is detectable with BA 0.661 @ layer 15.
+
+Q3. Is false_pressure harmfulness detectable before ANSWER?
+  Unsupported on this dataset: class_counts=0:34,1:2; need at least 4 examples per class for leave-one-family-out training with min_train_class_count=3
+
+Q4. Does emotional -> false or emotional -> closed transfer survive in the matched-prefix format?
+  evidence_emotional_pressure_to_evidence_false_belief_pressure: unsupported (source_class_counts=0:33,1:3; need at least 4 source examples per class so the held-out-family training split keeps min_train_class_count=3)
+  evidence_emotional_pressure_to_closed_context_false_belief_pressure: unsupported (source_class_counts=0:33,1:3; need at least 4 source examples per class so the held-out-family training split keeps min_train_class_count=3)
+  No. Neither requested emotional-source transfer direction survives before ANSWER.
+
+Q5. Does the strongest pre-ANSWER result survive max-over-layers permutation control?
+  Strongest pre-ANSWER result: analysis=cross_condition, pair=closed_context_false_belief_pressure_to_evidence_false_belief_pressure, anchor=S1: end of question block, BA 0.985
+  Max-over-layers permutation mean BA: 0.864
+  Max-over-layers permutation 95th percentile BA: 0.913
+  Empirical p-value: 0.0099
+  Survives max-over-layers permutation control: YES

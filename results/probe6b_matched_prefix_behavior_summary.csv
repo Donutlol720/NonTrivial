@@ -1,0 +1,6 @@
+condition,mean_delta,median_delta,n_families,n_negative,n_positive,n_zero
+evidence_false_belief_pressure,-0.000000,0.000000,36,1,0,35
+evidence_emotional_pressure,-0.000000,0.000000,36,1,0,35
+closed_context_false_belief_pressure,1543748.333333,0.000000,36,2,2,32
+evidence_distractor_neutral,-0.000000,0.000000,36,1,1,34
+evidence_true_belief_pressure,-0.000000,0.000000,36,1,0,35

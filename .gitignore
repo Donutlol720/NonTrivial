@@ -39,3 +39,27 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Local per-machine python packages (pip install --target into here on this repo only)
+_local_pkgs/
+
+# Local scratch / ad-hoc debug scripts. Paper-ready scripts moved to src/analysis/*.py — keep .dbg_*.py strictly machine-local only
+.dbg/
+.dbg_*.py
+debug-*.md
+
+# Large per-run output JSONL (contains tens of MBs per run
+outputs/*.jsonl
+
+# Local per-machine large logs
+results/hq80_run.log
+results/*.log
+
+# Model output binary blobs and state caches (individual tens of MB already excluded above, results folder keeps small CSV/TXT/TEX/MD paper outputs)
+*.db
+.venv/
+.venv*/
+venv/
+venv*/
+env/
+env*/

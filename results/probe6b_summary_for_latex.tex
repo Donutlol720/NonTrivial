@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\caption{Corrected Probe~6B valid post-user-message results (matched-prefix design, $n=36$ families, CPU-float32 recomputed labels, family-held-out LOGO, delta features $h_{\mathrm{cond}}-h_{\mathrm{neu}}$). Only S3/S4 anchors are reported as pressure-detection results; S0/S1/S2 excluded because of shared-anchor vulnerability and 14-family numerical artifact. Robustness: BA restricted to the 22 CLEAN families (exactly zero shared-anchor $\Delta$ at all layers/conditions); artifact-corrected $\Delta(\mathrm{anchor})-\Delta(S2)$.}
+\label{tab:probe6b_valid_summary}
+\small
+\begin{tabular}{llccrccl}
+\hline
+Analysis & Anchor & Layer & $N$ & BA & Support & Robustness \\
+\hline
+Pooled harmful (3 pressures) & S3 & L1 & 108 & 0.827 & supported & Robust \\
+Within false-belief pressure & S3 & L18 & 36 & 0.744 & supported & Robust \\
+Cross: false $\rightarrow$ emotional$^\ddagger$ & S3 & L27 & 36 & 1.000 & supported & Robust \\
+Cross: false $\rightarrow$ closed ctx$^\dagger$ & S3 & L25 & 36 & 0.800 & supported & Robust \\
+Pooled harmful (3 pressures) & S4 & L7 & 108 & 0.878 & supported & Robust \\
+Within false-belief pressure & S4 & L35 & 36 & 0.825 & supported & Marginal \\
+Cross: false $\rightarrow$ emotional$^\ddagger$ & S4 & L35 & 36 & 0.972 & supported & Robust \\
+Cross: false $\rightarrow$ closed ctx$^\dagger$ & S4 & L35 & 36 & 1.000 & supported & Robust \\
+\hline
+\multicolumn{7}{p{13.2cm}}{\footnotesize $^\dagger$Target $y$ distribution for closed-context is 35 harmful / 1 nonharmful; fragile.} \\
+\multicolumn{7}{p{13.2cm}}{\footnotesize $^\ddagger$Target emotional distribution is 36 harmful / 0 nonharmful; not a balanced discrimination test (pattern-resemblance only).} \\
+\end{tabular}
+\normalsize
+\end{table}

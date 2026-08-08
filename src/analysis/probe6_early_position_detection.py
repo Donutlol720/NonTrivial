@@ -4,13 +4,13 @@ import json
 import os
 import sys
 import time
-from collections import OrderedDict
+import urllib.request
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
-from sklearn.linear_model import LogisticRegression
+from sklearn.exceptions import ConvergenceWarning, UndefinedMetricWarning
 from sklearn.metrics import (
     average_precision_score,
     balanced_accuracy_score,
@@ -22,16 +22,16 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils._testing import ignore_warnings  # noqa
-from sklearn.exceptions import ConvergenceWarning, UndefinedMetricWarning
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "src"))
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
 
 DEFAULT_INPUT = "outputs/state_logits_qwen3_4b_instruct_2507_all_families.jsonl"
 DEFAULT_FAMILY_DELTAS = "results/qwen3_4b_instruct_2507_family36_family_margin_deltas.csv"
@@ -41,6 +41,10 @@ DEFAULT_ACTIVATION_OUTPUT_ROOT = "activations/qwen3_4b_instruct_2507_early_posit
 DEFAULT_LAYERWISE_OUTPUT = "results/probe6_early_position_layerwise.csv"
 DEFAULT_SUMMARY_OUTPUT = "results/probe6_early_position_summary.txt"
 DEFAULT_BEST_LAYERS_OUTPUT = "results/probe6_early_position_best.csv"
+DEFAULT_DETECTABLE_THRESHOLD = 0.55
+MIN_TRAIN_CLASS_COUNT = 3
+POST_SCALE_CLIP_ABS = 20.0
+SCORE_CLIP_ABS = POST_SCALE_CLIP_ABS * POST_SCALE_CLIP_ABS * 2560 + POST_SCALE_CLIP_ABS
 
 ANCHOR_ORDER = [
     "end_of_evidence_block",
@@ -62,19 +66,13 @@ CONDITIONS = [
     "closed_context_false_belief_pressure",
 ]
 NEUTRAL_CONDITION = "evidence_neutral"
-
-
-def read_jsonl(path: Path) -> List[Dict[str, Any]]:
-    rows: List[Dict[str, Any]] = []
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            rows.append(json.loads(line))
-    return rows
-
-
+EXTRACTION_CONDITIONS = [
+    NEUTRAL_CONDITION,
+    "evidence_false_belief_pressure",
+    "evidence_emotional_pressure",
+    "closed_context_false_belief_pressure",
+    "evidence_true_belief_pressure",
+]
 CONDITION_DELTA_COLUMN_MAP: Dict[str, str] = {
     "evidence_false_belief_pressure": "delta_false_pressure",
     "evidence_emotional_pressure": "delta_emotional_pressure",
@@ -82,152 +80,196 @@ CONDITION_DELTA_COLUMN_MAP: Dict[str, str] = {
 }
 
 
+# #region debug-point A-E:probe6-runtime-instrumentation
+def _debug_env() -> Tuple[str, str]:
+    env_path = REPO_ROOT / ".dbg" / "probe6-numeric-overflow.env"
+    debug_url = "http://127.0.0.1:7777/event"
+    session_id = "probe6-numeric-overflow"
+    try:
+        contents = env_path.read_text(encoding="utf-8")
+        for line in contents.splitlines():
+            if line.startswith("DEBUG_SERVER_URL="):
+                debug_url = line.split("=", 1)[1].strip() or debug_url
+            elif line.startswith("DEBUG_SESSION_ID="):
+                session_id = line.split("=", 1)[1].strip() or session_id
+    except Exception:
+        pass
+    return debug_url, session_id
+
+
+def _debug_post(run_id: str, hypothesis_id: str, location: str, msg: str, data: Mapping[str, Any]) -> None:
+    try:
+        debug_url, session_id = _debug_env()
+        effective_run_id = os.environ.get("DEBUG_RUN_ID", run_id)
+        payload = {
+            "sessionId": session_id,
+            "runId": effective_run_id,
+            "hypothesisId": hypothesis_id,
+            "location": location,
+            "msg": msg,
+            "data": dict(data),
+            "ts": int(time.time() * 1000),
+        }
+        request = urllib.request.Request(
+            debug_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        urllib.request.urlopen(request, timeout=1.5).read()
+    except Exception:
+        pass
+# #endregion
+
+
+def read_jsonl(path: Path) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                row = json.loads(stripped)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Invalid JSON on line {line_number} of {path}: {exc}") from exc
+            if not isinstance(row, dict):
+                raise ValueError(f"Line {line_number} of {path} is not a JSON object.")
+            rows.append(row)
+    return rows
+
+
+def resolve_required_path(path_str: str, purpose: str, hint: str) -> Path:
+    path = Path(path_str)
+    if not path.is_absolute():
+        path = (REPO_ROOT / path).resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Missing {purpose}: {path}\n{hint}")
+    return path
+
+
 def read_family_deltas(path: Path) -> Dict[Tuple[str, str], Dict[str, Any]]:
     out: Dict[Tuple[str, str], Dict[str, Any]] = {}
-    with path.open("r", encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
     if not rows:
         return out
+
     first = rows[0]
-    has_condition_col = "condition" in first and "delta_margin" in first
-    if has_condition_col:
+    if "condition" in first and "delta_margin" in first:
         for row in rows:
-            fam = str(row.get("family_id", "")).strip()
-            cond = str(row.get("condition", "")).strip()
-            if not fam or not cond:
+            family_id = str(row.get("family_id", "")).strip()
+            condition = str(row.get("condition", "")).strip()
+            if not family_id or not condition:
                 continue
-            dm = row.get("delta_margin")
             try:
-                dm_val = float(dm) if dm is not None and dm != "" else None
+                delta_margin = float(row["delta_margin"]) if row.get("delta_margin") not in ("", None) else None
             except (TypeError, ValueError):
-                dm_val = None
-            out[(fam, cond)] = {
-                "delta_margin": dm_val,
-            }
+                delta_margin = None
+            out[(family_id, condition)] = {"delta_margin": delta_margin}
         return out
+
     for row in rows:
-        fam = str(row.get("family_id", "")).strip()
-        if not fam:
+        family_id = str(row.get("family_id", "")).strip()
+        if not family_id:
             continue
-        for cond, col_name in CONDITION_DELTA_COLUMN_MAP.items():
-            dm = row.get(col_name)
+        for condition, column_name in CONDITION_DELTA_COLUMN_MAP.items():
+            value = row.get(column_name)
             try:
-                dm_val = float(dm) if dm is not None and dm != "" else None
+                delta_margin = float(value) if value not in ("", None) else None
             except (TypeError, ValueError):
-                dm_val = None
-            out[(fam, cond)] = {
-                "delta_margin": dm_val,
-            }
+                delta_margin = None
+            out[(family_id, condition)] = {"delta_margin": delta_margin}
     return out
 
 
 def label_primary(delta_margin: Optional[float]) -> Optional[int]:
     if delta_margin is None:
         return None
-    return 1 if delta_margin < 0 else 0
+    return 1 if delta_margin < 0.0 else 0
 
 
-def load_tokenizer(model_name: str):
+def load_tokenizer(model_name: str) -> Any:
     from transformers import AutoTokenizer
 
     cache_dir = os.environ.get("HF_HOME", str(REPO_ROOT / "model_cache"))
-    tokenizer = AutoTokenizer.from_pretrained(
+    return AutoTokenizer.from_pretrained(
         model_name,
         cache_dir=cache_dir,
         trust_remote_code=True,
     )
-    return tokenizer
 
 
-def find_anchor_positions(
-    prompt_text: str,
-    answer_logit_prompt_suffix: str,
-    tokenizer: Any,
-) -> Dict[str, int]:
-    """
-    Given the raw prompt and its tokenized length, return byte-level string
-    positions (last-char index) and we'll map to token positions via tokenize
-    with return_offsets_mapping=True.
-    """
+def _min_positive(values: Iterable[int]) -> int:
+    positives = [value for value in values if value >= 0]
+    return min(positives) if positives else -1
+
+
+def find_anchor_positions(prompt_text: str, answer_logit_prompt_suffix: str, tokenizer: Any) -> Dict[str, int]:
     suffix_start = prompt_text.rfind(answer_logit_prompt_suffix)
     base_text = prompt_text if suffix_start < 0 else prompt_text[:suffix_start]
     base_text = base_text.rstrip()
 
-    has_user_pressure = False
-    marker_after_pressure_list = [
-        "\n\nRetrieved document:",
-        "\n\nContext:",
-        "\nQuestion:",
-    ]
-    end_pressure_pos = -1
-    for marker in marker_after_pressure_list:
-        idx = base_text.find(marker)
-        if idx >= 0:
-            end_pressure_pos = max(end_pressure_pos, idx - 1)
-            has_user_pressure = True
-
-    evidence_start_patterns = [
-        ("Retrieved document:", "\nQuestion:"),
-        ("Context:", "\nQuestion:"),
-    ]
-    end_evidence_pos = -1
-    for ev_start_marker, after_ev_marker in evidence_start_patterns:
-        ev_idx = base_text.find(ev_start_marker)
-        if ev_idx < 0:
-            continue
-        after_idx = base_text.find(after_ev_marker, ev_idx + len(ev_start_marker))
-        if after_idx < 0:
-            continue
-        end_evidence_pos = max(end_evidence_pos, after_idx - 1)
-
-    q_marker = "\nQuestion:"
-    q_idx = base_text.rfind(q_marker)
-    end_question_pos = -1
-    if q_idx >= 0:
-        after_q = base_text.find("\nChoices:", q_idx + len(q_marker))
-        if after_q < 0:
-            after_q = base_text.find("\n\n", q_idx + len(q_marker))
-        if after_q < 0:
-            after_q = len(base_text)
-        end_question_pos = after_q - 1
-
-    choices_marker = "\nChoices:"
-    end_choices_pos = -1
-    c_idx = base_text.rfind(choices_marker)
-    if c_idx >= 0:
-        format_markers = [
-            "\n\nAnswer with exactly this format:",
-            "\n\nAnswer with only A or B.",
+    first_structural_marker = _min_positive(
+        [
+            base_text.find("\n\nRetrieved document:"),
+            base_text.find("\n\nContext:"),
+            base_text.find("\nQuestion:"),
         ]
-        fmt_idx = -1
-        for fm in format_markers:
-            i = base_text.find(fm, c_idx + len(choices_marker))
-            if i >= 0 and (fmt_idx < 0 or i < fmt_idx):
-                fmt_idx = i
-        if fmt_idx < 0:
-            fmt_idx = len(base_text)
-        end_choices_pos = fmt_idx - 1
+    )
+    end_prefix_pos = first_structural_marker - 1 if first_structural_marker >= 0 else len(base_text) - 1
 
-    end_prompt_pos = len(base_text) - 1
+    end_evidence_pos = -1
+    for start_marker in ("\n\nRetrieved document:", "\n\nContext:"):
+        start_idx = base_text.find(start_marker)
+        if start_idx < 0:
+            continue
+        question_idx = base_text.find("\nQuestion:", start_idx + len(start_marker))
+        if question_idx >= 0:
+            end_evidence_pos = max(end_evidence_pos, question_idx - 1)
 
-    full_text = base_text + "\n\nAnswer with only A or B.\n\nANSWER:"
+    question_idx = base_text.rfind("\nQuestion:")
+    end_question_pos = -1
+    if question_idx >= 0:
+        next_idx = _min_positive(
+            [
+                base_text.find("\nChoices:", question_idx + len("\nQuestion:")),
+                base_text.find("\n\nAnswer with exactly this format:", question_idx + len("\nQuestion:")),
+            ]
+        )
+        if next_idx < 0:
+            next_idx = len(base_text)
+        end_question_pos = next_idx - 1
+
+    choices_idx = base_text.rfind("\nChoices:")
+    end_choices_pos = -1
+    if choices_idx >= 0:
+        next_idx = _min_positive(
+            [
+                base_text.find("\n\nAnswer with exactly this format:", choices_idx + len("\nChoices:")),
+                base_text.find("\n\nAnswer with only A or B.", choices_idx + len("\nChoices:")),
+            ]
+        )
+        if next_idx < 0:
+            next_idx = len(base_text)
+        end_choices_pos = next_idx - 1
+
+    answer_prompt = base_text + "\n\nAnswer with only A or B.\n\nANSWER:"
     encoded = tokenizer(
-        full_text,
+        answer_prompt,
         add_special_tokens=True,
         return_offsets_mapping=True,
         return_tensors="np",
     )
-    offsets = np.array(encoded["offset_mapping"][0])
-    token_seq_len = offsets.shape[0]
+    offsets = np.asarray(encoded["offset_mapping"][0])
+    token_seq_len = int(offsets.shape[0])
 
     def char_to_token(char_pos: int) -> int:
-        if char_pos < 0 or token_seq_len <= 0:
+        if token_seq_len <= 0:
+            return 0
+        if char_pos < 0:
             return 0
         pos = char_pos + 1
-        mask_start = offsets[:, 0] <= pos
-        mask_end = offsets[:, 1] >= pos
-        hits = np.where(mask_start & mask_end)[0]
+        hits = np.where((offsets[:, 0] <= pos) & (offsets[:, 1] >= pos))[0]
         if len(hits) > 0:
             return int(hits[-1])
         fallback = np.where(offsets[:, 0] < pos)[0]
@@ -235,15 +277,14 @@ def find_anchor_positions(
             return int(fallback[-1])
         return 0
 
-    out: Dict[str, int] = {
+    return {
         "end_of_evidence_block": char_to_token(end_evidence_pos) if end_evidence_pos >= 0 else 0,
-        "end_of_user_pressure_sentence": char_to_token(end_pressure_pos) if has_user_pressure and end_pressure_pos >= 0 else 0,
+        "end_of_user_pressure_sentence": char_to_token(end_prefix_pos) if end_prefix_pos >= 0 else 0,
         "end_of_question": char_to_token(end_question_pos) if end_question_pos >= 0 else 0,
         "end_of_answer_choices": char_to_token(end_choices_pos) if end_choices_pos >= 0 else 0,
         "final_answer_position": token_seq_len - 1,
         "_token_seq_len": token_seq_len,
     }
-    return out
 
 
 @torch.inference_mode()
@@ -256,12 +297,13 @@ def run_forward_multi_position(
     token_positions: Mapping[str, int],
 ) -> Dict[str, Any]:
     import gc
+
     suffix_start = prompt_text.rfind(answer_logit_suffix)
     base_text = prompt_text if suffix_start < 0 else prompt_text[:suffix_start]
     base_text = base_text.rstrip()
     full_text = base_text + "\n\nAnswer with only A or B.\n\nANSWER:"
     inputs = tokenizer(full_text, return_tensors="pt")
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    inputs = {key: value.to(device) for key, value in inputs.items()}
     outputs = model(
         **inputs,
         output_hidden_states=True,
@@ -275,19 +317,20 @@ def run_forward_multi_position(
         raise RuntimeError("Model did not return hidden states")
 
     n_layers = len(hidden_states) - 1
-    last_hidden_dim = hidden_states[1].shape[-1]
-    layer_vectors = {anchor: np.zeros((n_layers, last_hidden_dim), dtype=np.float16) for anchor in ANCHOR_ORDER}
+    hidden_dim = int(hidden_states[1].shape[-1])
     seq_len = int(inputs["input_ids"].shape[1])
+    layer_vectors: Dict[str, np.ndarray] = {
+        anchor: np.zeros((n_layers, hidden_dim), dtype=np.float16) for anchor in ANCHOR_ORDER
+    }
     del inputs
+
     for anchor in ANCHOR_ORDER:
-        pos = int(token_positions.get(anchor, 0))
-        pos = min(pos, seq_len - 1)
+        pos = min(int(token_positions.get(anchor, 0)), seq_len - 1)
         for layer_offset in range(n_layers):
-            raw_state = hidden_states[layer_offset + 1]
-            vec = raw_state[0, pos, :].detach().to("cpu", dtype=torch.float16).numpy()
+            vec = hidden_states[layer_offset + 1][0, pos, :].detach().to("cpu", dtype=torch.float16).numpy()
             layer_vectors[anchor][layer_offset] = vec
-            del raw_state
-    del hidden_states
+
+    del hidden_states, outputs
     if hasattr(torch.cuda, "empty_cache"):
         try:
             torch.cuda.empty_cache()
@@ -297,7 +340,7 @@ def run_forward_multi_position(
     return {
         "logits_last_token": logits,
         "hidden_states_by_anchor": layer_vectors,
-        "token_seq_len": int(seq_len),
+        "token_seq_len": seq_len,
     }
 
 
@@ -306,74 +349,75 @@ def build_answer_logit_suffix() -> str:
 
 
 def extract_early_activations(args: argparse.Namespace) -> Path:
-    sys.path.insert(0, str(REPO_ROOT / "src"))
-    from load_model import load_local_model, pick_device, pick_dtype  # noqa
+    from load_model import load_local_model, pick_device, pick_dtype
+
+    input_path = resolve_required_path(
+        args.input,
+        "extraction JSONL",
+        "Run src/extraction/extract_multi_family_states_and_logits.py to produce the state/logit dataset first.",
+    )
+    prompt_dataset_path = resolve_required_path(
+        args.prompt_dataset,
+        "prompt dataset JSONL",
+        "The early-position extractor needs data/generated_prompts_v1.jsonl.",
+    )
 
     worker_bidx = int(getattr(args, "worker_batch_index", -1))
     worker_total = int(getattr(args, "worker_total_batches", -1))
 
-    prompts_all = read_jsonl(Path(args.prompt_dataset))
-    prompts_by_pid: Dict[str, Dict[str, Any]] = {str(r["prompt_id"]): r for r in prompts_all if "prompt_id" in r}
+    prompts_all = read_jsonl(prompt_dataset_path)
+    prompts_by_pid = {str(row["prompt_id"]): row for row in prompts_all if "prompt_id" in row}
+    existing_rows = read_jsonl(input_path)
 
-    existing_rows = read_jsonl(Path(args.input))
-    CONDITIONS_EXTRACT = [
-        NEUTRAL_CONDITION,
-        "evidence_false_belief_pressure",
-        "evidence_emotional_pressure",
-        "closed_context_false_belief_pressure",
-        "evidence_true_belief_pressure",
-    ]
-    by_fam_cond: Dict[Tuple[str, str], Dict[str, Any]] = {}
-    for r in existing_rows:
-        fam = str(r.get("family_id", "")).strip()
-        cond = str(r.get("prompt_type", "")).strip()
-        if not fam or not cond:
-            continue
-        if cond not in CONDITIONS_EXTRACT:
-            continue
-        by_fam_cond[(fam, cond)] = r
+    by_family_condition: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    for row in existing_rows:
+        family_id = str(row.get("family_id", "")).strip()
+        condition = str(row.get("prompt_type", "")).strip()
+        if family_id and condition in EXTRACTION_CONDITIONS:
+            by_family_condition[(family_id, condition)] = row
 
-    only_pairs: set[Tuple[str, str]] | None = None
-    only_arg = getattr(args, "only_family_conditions", "")
-    if isinstance(only_arg, str) and only_arg:
+    only_pairs: Optional[set[Tuple[str, str]]] = None
+    if getattr(args, "only_family_conditions", ""):
         only_pairs = set()
-        for piece in only_arg.split(","):
+        for piece in str(args.only_family_conditions).split(","):
             piece = piece.strip()
-            if not piece:
+            if not piece or "=" not in piece:
                 continue
-            if "=" in piece:
-                a, b = piece.split("=", 1)
-                only_pairs.add((a.strip(), b.strip()))
+            family_id, condition = piece.split("=", 1)
+            only_pairs.add((family_id.strip(), condition.strip()))
 
-    families = sorted({fam for fam, _ in by_fam_cond.keys()})
+    families = sorted({family_id for family_id, _ in by_family_condition.keys()})
 
-    import gc
     try:
         torch.set_num_threads(1)
     except Exception:
         pass
-    if os.environ.get("OVERRIDE_DEVICE"):
-        device = os.environ["OVERRIDE_DEVICE"]
-    else:
-        device = pick_device("")
+    device = os.environ.get("OVERRIDE_DEVICE") or pick_device("")
     if os.environ.get("OVERRIDE_DTYPE"):
-        explicit_dt = os.environ["OVERRIDE_DTYPE"]
         dtype_map = {"float16": torch.float16, "float32": torch.float32, "bfloat16": torch.bfloat16}
-        dtype = dtype_map.get(explicit_dt, pick_dtype(device, ""))
+        dtype = dtype_map.get(os.environ["OVERRIDE_DTYPE"], pick_dtype(device, ""))
     else:
-        if device == "cpu":
-            dtype = torch.float32
-        else:
-            dtype = pick_dtype(device, "")
+        dtype = torch.float32 if device == "cpu" else pick_dtype(device, "")
+
     cache_dir = os.environ.get("HF_HOME", str(REPO_ROOT / "model_cache"))
-    mem_gib_env = os.environ.get("CPU_MAX_MEMORY_GIB", "")
-    cpu_max_memory_gib = int(mem_gib_env) if mem_gib_env.isdigit() else 0
-    offload_folder_env = os.environ.get("CPU_OFFLOAD_FOLDER", "")
-    offload_folder = offload_folder_env or (str(REPO_ROOT / "temp_offload_folder") if cpu_max_memory_gib > 0 else "")
+    cpu_max_memory_gib = int(os.environ.get("CPU_MAX_MEMORY_GIB", "0") or "0")
+    offload_folder = os.environ.get("CPU_OFFLOAD_FOLDER", "")
     if cpu_max_memory_gib > 0 and offload_folder:
         os.makedirs(offload_folder, exist_ok=True)
-    print(json.dumps({"status": "loading_model", "model": args.model, "device": device, "dtype": str(dtype), "cpu_max_memory_gib": cpu_max_memory_gib, "offload_folder": offload_folder or ""}), flush=True)
-    gc.collect()
+
+    print(
+        json.dumps(
+            {
+                "status": "loading_model",
+                "model": args.model,
+                "device": device,
+                "dtype": str(dtype),
+                "cpu_max_memory_gib": cpu_max_memory_gib,
+                "offload_folder": offload_folder,
+            }
+        ),
+        flush=True,
+    )
     model, tokenizer = load_local_model(
         args.model,
         device=device,
@@ -386,116 +430,126 @@ def extract_early_activations(args: argparse.Namespace) -> Path:
 
     suffix = build_answer_logit_suffix()
     output_root = Path(args.activation_output_root)
+    if not output_root.is_absolute():
+        output_root = (REPO_ROOT / output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
-    manifest_rows: List[Dict[str, Any]] = []
-    t0 = time.time()
-    n_done = 0
-    n_total = 0
-    needed_pairs = []
-    for fam in families:
-        for cond in CONDITIONS_EXTRACT:
-            key = (fam, cond)
-            if key not in by_fam_cond:
+
+    needed_pairs: List[Tuple[str, str]] = []
+    for family_id in families:
+        for condition in EXTRACTION_CONDITIONS:
+            key = (family_id, condition)
+            if key not in by_family_condition:
                 continue
             if only_pairs is not None and key not in only_pairs:
                 continue
             needed_pairs.append(key)
-    n_total = len(needed_pairs)
-    print(json.dumps({"status": "worker_batch_start", "worker_batch_index": worker_bidx, "worker_total_batches": worker_total, "n_pairs_in_batch": n_total, "extraction_root": str(output_root)}), flush=True)
+
+    manifest_rows: List[Dict[str, Any]] = []
+    t0 = time.time()
+    print(
+        json.dumps(
+            {
+                "status": "worker_batch_start",
+                "worker_batch_index": worker_bidx,
+                "worker_total_batches": worker_total,
+                "n_pairs_in_batch": len(needed_pairs),
+                "extraction_root": str(output_root),
+            }
+        ),
+        flush=True,
+    )
+
+    import gc
+
     try:
-        for fam, cond in needed_pairs:
-            ref_row = by_fam_cond[(fam, cond)]
-            pid = str(ref_row["prompt_id"])
-            prompt_row = prompts_by_pid.get(pid)
+        for index, (family_id, condition) in enumerate(needed_pairs, start=1):
+            ref_row = by_family_condition[(family_id, condition)]
+            prompt_id = str(ref_row["prompt_id"])
+            prompt_row = prompts_by_pid.get(prompt_id)
             if prompt_row is None:
-                continue
+                raise KeyError(f"Prompt ID {prompt_id} is missing from {prompt_dataset_path}")
             prompt_text = str(prompt_row.get("prompt", ""))
-            family_dir = output_root / fam
+
+            family_dir = output_root / family_id
             family_dir.mkdir(parents=True, exist_ok=True)
-            out_path = family_dir / f"{fam}_{cond}.pt"
+            out_path = family_dir / f"{family_id}_{condition}.pt"
+
             if out_path.exists() and not args.force_reextract:
                 try:
                     loaded = torch.load(out_path, map_location="cpu")
                     hs_anchor = loaded.get("hidden_states_by_anchor", {})
-                    has_all_keys = all(anchor in hs_anchor for anchor in ANCHOR_ORDER)
-                    ap = loaded.get("anchor_positions", {}) or {}
-                    try:
-                        tsl = int(ap.get("_token_seq_len", 0))
-                    except Exception:
-                        tsl = 0
-                    seq_ok = tsl >= 50
+                    anchor_positions = loaded.get("anchor_positions", {}) or {}
+                    has_all_anchors = all(anchor in hs_anchor for anchor in ANCHOR_ORDER)
+                    seq_len_ok = int(anchor_positions.get("_token_seq_len", 0)) >= 50
                     norm_ok = False
-                    if has_all_keys:
-                        try:
-                            v = hs_anchor[ANCHOR_ORDER[0]]
-                            if isinstance(v, torch.Tensor):
-                                arr = v.to(dtype=torch.float32).numpy()
-                            else:
-                                import numpy as _np
-                                arr = _np.asarray(v, dtype=_np.float32)
-                            lyr0 = arr[0] if arr.ndim >= 2 else arr
-                            norm_ok = float(np.linalg.norm(lyr0)) > 1e-6
-                        except Exception:
-                            norm_ok = False
-                    if has_all_keys and seq_ok and norm_ok:
-                        del loaded, hs_anchor
-                        gc.collect()
-                        n_done += 1
-                        manifest_rows.append({
-                            "family_id": fam,
-                            "condition": cond,
-                            "prompt_id": pid,
-                            "activation_path": str(out_path.resolve().relative_to(REPO_ROOT.resolve())),
-                            "skipped_existing": 1,
-                        })
+                    if has_all_anchors:
+                        arr = hs_anchor[ANCHOR_ORDER[0]]
+                        if isinstance(arr, torch.Tensor):
+                            arr = arr.to(dtype=torch.float32).numpy()
+                        else:
+                            arr = np.asarray(arr, dtype=np.float32)
+                        norm_ok = float(np.linalg.norm(arr[0])) > 1e-6
+                    if has_all_anchors and seq_len_ok and norm_ok:
+                        manifest_rows.append(
+                            {
+                                "family_id": family_id,
+                                "condition": condition,
+                                "prompt_id": prompt_id,
+                                "activation_path": str(out_path.relative_to(REPO_ROOT)),
+                                "skipped_existing": 1,
+                            }
+                        )
                         continue
                 except Exception:
                     pass
+
             anchors = find_anchor_positions(prompt_text, suffix, tokenizer)
             result = run_forward_multi_position(model, tokenizer, prompt_text, suffix, device, anchors)
-            hs_anchor = result["hidden_states_by_anchor"]
             record = {
-                "family_id": fam,
-                "condition": cond,
-                "prompt_id": pid,
-                "prompt_type": cond,
+                "family_id": family_id,
+                "condition": condition,
+                "prompt_id": prompt_id,
+                "prompt_type": condition,
                 "answer_logit_prompt": str(ref_row.get("answer_logit_prompt", "")),
                 "model_name": args.model,
                 "anchor_positions": dict(anchors),
                 "hidden_states_by_anchor": {
-                    anchor: torch.from_numpy(hs_anchor[anchor])
-                    for anchor in ANCHOR_ORDER
+                    anchor: torch.from_numpy(result["hidden_states_by_anchor"][anchor]) for anchor in ANCHOR_ORDER
                 },
                 "logits_last_token": torch.from_numpy(result["logits_last_token"]),
                 "token_seq_len": int(result["token_seq_len"]),
             }
             torch.save(record, out_path)
-            del record, hs_anchor, result, anchors, prompt_text, ref_row
-            gc.collect()
-            n_done += 1
-            manifest_rows.append({
-                "family_id": fam,
-                "condition": cond,
-                "prompt_id": pid,
-                "activation_path": str(out_path.resolve().relative_to(REPO_ROOT.resolve())),
-                "skipped_existing": 0,
-            })
-            if n_done % 6 == 0 or n_done == max(1, n_total):
+            manifest_rows.append(
+                {
+                    "family_id": family_id,
+                    "condition": condition,
+                    "prompt_id": prompt_id,
+                    "activation_path": str(out_path.relative_to(REPO_ROOT)),
+                    "skipped_existing": 0,
+                }
+            )
+
+            if index % 6 == 0 or index == len(needed_pairs):
+                elapsed = max(time.time() - t0, 1e-9)
+                print(
+                    json.dumps(
+                        {
+                            "status": "extracted_batch",
+                            "n_done": index,
+                            "n_total": len(needed_pairs),
+                            "elapsed_sec": int(elapsed),
+                            "examples_per_sec": round(index / elapsed, 4),
+                        }
+                    ),
+                    flush=True,
+                )
                 if hasattr(torch.cuda, "empty_cache"):
                     try:
                         torch.cuda.empty_cache()
                     except Exception:
                         pass
                 gc.collect()
-                elapsed = time.time() - t0
-                rate = n_done / elapsed if elapsed > 0 else 0.0
-                print(json.dumps({
-                    "status": "extracted_batch",
-                    "n_done": n_done,
-                    "n_total": n_total,
-                    "elapsed_sec": int(elapsed),
-                    "examples_per_sec": round(rate, 4),
-                }), flush=True)
     finally:
         try:
             del model
@@ -511,11 +565,12 @@ def extract_early_activations(args: argparse.Namespace) -> Path:
             except Exception:
                 pass
         gc.collect()
+
     if not manifest_rows:
         raise RuntimeError("No manifest rows produced.")
     manifest_path = output_root / "manifest.csv"
-    with manifest_path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(manifest_rows[0].keys()))
+    with manifest_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(manifest_rows[0].keys()))
         writer.writeheader()
         writer.writerows(manifest_rows)
     return manifest_path
@@ -526,13 +581,13 @@ def load_activation_by_anchor(path: Path) -> Dict[str, np.ndarray]:
     raw = record["hidden_states_by_anchor"]
     out: Dict[str, np.ndarray] = {}
     for anchor in ANCHOR_ORDER:
-        t = raw.get(anchor)
-        if t is None:
+        tensor = raw.get(anchor)
+        if tensor is None:
             raise RuntimeError(f"Missing anchor {anchor} in {path}")
-        if isinstance(t, torch.Tensor):
-            out[anchor] = t.to(dtype=torch.float32).numpy()
+        if isinstance(tensor, torch.Tensor):
+            out[anchor] = tensor.to(dtype=torch.float32).numpy()
         else:
-            out[anchor] = np.asarray(t, dtype=np.float32)
+            out[anchor] = np.asarray(tensor, dtype=np.float32)
     return out
 
 
@@ -540,186 +595,557 @@ def collect_dataset(
     jsonl_rows: Sequence[Mapping[str, Any]],
     family_deltas: Mapping[Tuple[str, str], Mapping[str, Any]],
     activation_root: Path,
-) -> Tuple[
-    Dict[Tuple[str, str, str], np.ndarray],
-    Dict[Tuple[str, str, str], Dict[str, Any]],
-    int,
-]:
-    by_fam_cond: Dict[Tuple[str, str], Dict[str, Any]] = {}
-    for r in jsonl_rows:
-        fam = str(r.get("family_id", "")).strip()
-        cond = str(r.get("prompt_type", "")).strip()
-        if fam and cond:
-            by_fam_cond[(fam, cond)] = r
+) -> Tuple[Dict[Tuple[str, str, str], np.ndarray], Dict[Tuple[str, str, str], Dict[str, Any]], int]:
+    by_family_condition: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    for row in jsonl_rows:
+        family_id = str(row.get("family_id", "")).strip()
+        condition = str(row.get("prompt_type", "")).strip()
+        if family_id and condition:
+            by_family_condition[(family_id, condition)] = dict(row)
+
     deltas: Dict[Tuple[str, str, str], np.ndarray] = {}
     metadata: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
     layer_count = 0
-    families = sorted({fam for fam, _ in by_fam_cond.keys()})
-    for fam in families:
-        neutral_row = by_fam_cond.get((fam, NEUTRAL_CONDITION))
+
+    for family_id in sorted({family for family, _ in by_family_condition.keys()}):
+        neutral_row = by_family_condition.get((family_id, NEUTRAL_CONDITION))
         if neutral_row is None:
             continue
-        neutral_path = activation_root / fam / f"{fam}_{NEUTRAL_CONDITION}.pt"
+        neutral_path = activation_root / family_id / f"{family_id}_{NEUTRAL_CONDITION}.pt"
         if not neutral_path.exists():
             continue
-        neutral_acts = load_activation_by_anchor(neutral_path)
-        layer_count = neutral_acts[ANCHOR_ORDER[0]].shape[0]
-        for cond in CONDITIONS:
-            row = by_fam_cond.get((fam, cond))
-            if row is None:
+        neutral_by_anchor = load_activation_by_anchor(neutral_path)
+        layer_count = int(neutral_by_anchor[ANCHOR_ORDER[0]].shape[0])
+        for condition in CONDITIONS:
+            condition_row = by_family_condition.get((family_id, condition))
+            if condition_row is None:
                 continue
-            comp_path = activation_root / fam / f"{fam}_{cond}.pt"
-            if not comp_path.exists():
+            condition_path = activation_root / family_id / f"{family_id}_{condition}.pt"
+            if not condition_path.exists():
                 continue
-            comp_acts = load_activation_by_anchor(comp_path)
-            dm_info = family_deltas.get((fam, cond), {})
-            delta_margin = dm_info.get("delta_margin")
+            condition_by_anchor = load_activation_by_anchor(condition_path)
+            delta_margin = family_deltas.get((family_id, condition), {}).get("delta_margin")
             label = label_primary(delta_margin)
             for anchor in ANCHOR_ORDER:
-                key = (fam, cond, anchor)
-                delta = comp_acts[anchor] - neutral_acts[anchor]
-                deltas[key] = delta.astype(np.float32)
+                key = (family_id, condition, anchor)
+                deltas[key] = (condition_by_anchor[anchor] - neutral_by_anchor[anchor]).astype(np.float32)
                 metadata[key] = {
-                    "family_id": fam,
-                    "condition": cond,
+                    "family_id": family_id,
+                    "condition": condition,
                     "anchor": anchor,
                     "delta_margin": delta_margin,
                     "harmful_label_primary": label,
                 }
+    # #region debug-point A:dataset-finiteness
+    if deltas:
+        total_keys = len(deltas)
+        nonfinite_keys = 0
+        worst_key = None
+        worst_abs = -1.0
+        by_condition_anchor: Dict[str, Dict[str, float]] = {}
+        for key, arr in deltas.items():
+            finite = np.isfinite(arr)
+            if not finite.all():
+                nonfinite_keys += 1
+            max_abs = float(np.nanmax(np.abs(arr))) if arr.size else 0.0
+            if max_abs > worst_abs:
+                worst_abs = max_abs
+                worst_key = key
+            bucket = by_condition_anchor.setdefault(f"{key[1]}::{key[2]}", {"count": 0.0, "max_abs": 0.0, "nonfinite": 0.0})
+            bucket["count"] += 1.0
+            bucket["max_abs"] = max(bucket["max_abs"], max_abs)
+            bucket["nonfinite"] += float(not finite.all())
+        top_buckets = sorted(by_condition_anchor.items(), key=lambda item: item[1]["max_abs"], reverse=True)[:5]
+        _debug_post(
+            "pre-fix",
+            "A",
+            "probe6.collect_dataset",
+            "[DEBUG] Collected early-position delta tensor summary",
+            {
+                "total_keys": total_keys,
+                "nonfinite_keys": nonfinite_keys,
+                "worst_key": list(worst_key) if worst_key is not None else None,
+                "worst_abs": worst_abs,
+                "top_buckets": [
+                    {
+                        "bucket": name,
+                        "count": int(stats["count"]),
+                        "max_abs": stats["max_abs"],
+                        "nonfinite": int(stats["nonfinite"]),
+                    }
+                    for name, stats in top_buckets
+                ],
+            },
+        )
+    # #endregion
     return deltas, metadata, layer_count
+
+
+def safe_auroc(y_true: np.ndarray, y_prob: np.ndarray) -> float:
+    return float(roc_auc_score(y_true, y_prob)) if len(set(y_true.tolist())) >= 2 else float("nan")
+
+
+def safe_average_precision(y_true: np.ndarray, y_prob: np.ndarray) -> float:
+    return float(average_precision_score(y_true, y_prob)) if len(set(y_true.tolist())) >= 2 else float("nan")
+
+
+def majority_baseline_predictions(train_y: np.ndarray, n_test: int) -> np.ndarray:
+    if train_y.size == 0:
+        return np.zeros(n_test, dtype=np.int64)
+    counts = np.bincount(train_y.astype(np.int64))
+    majority = int(np.argmax(counts))
+    return np.full(n_test, majority, dtype=np.int64)
+
+
+def evaluate_predictions(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    baseline_pred: np.ndarray,
+) -> Dict[str, Any]:
+    ba = float(balanced_accuracy_score(y_true, y_pred))
+    baseline_ba = float(balanced_accuracy_score(y_true, baseline_pred))
+    try:
+        cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+        tn, fp, fn, tp = [int(x) for x in cm.ravel()]
+    except Exception:
+        tn = fp = fn = tp = 0
+    return {
+        "balanced_accuracy": ba,
+        "baseline_balanced_accuracy": baseline_ba,
+        "auroc": safe_auroc(y_true, y_prob),
+        "average_precision": safe_average_precision(y_true, y_prob),
+        "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+        "confusion_matrix_counts": f"tn={tn} fp={fp} fn={fn} tp={tp}",
+    }
+
+
+def centroid_probe_scores(train_x: np.ndarray, train_y: np.ndarray, test_x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    class0 = train_x[train_y == 0]
+    class1 = train_x[train_y == 1]
+    if class0.size == 0 or class1.size == 0:
+        raise ValueError("Both classes are required for the centroid probe.")
+    centroid0 = class0.mean(axis=0)
+    centroid1 = class1.mean(axis=0)
+    weight = centroid1 - centroid0
+    bias = -0.5 * (float(np.dot(centroid1, centroid1)) - float(np.dot(centroid0, centroid0)))
+    test_x = stabilize_scaled_features(np.asarray(test_x, dtype=np.float64))
+    weight = stabilize_scaled_features(np.asarray(weight, dtype=np.float64))
+    bias = float(np.clip(np.nan_to_num(bias, nan=0.0, posinf=POST_SCALE_CLIP_ABS, neginf=-POST_SCALE_CLIP_ABS), -POST_SCALE_CLIP_ABS, POST_SCALE_CLIP_ABS))
+    if (not np.isfinite(test_x).all()) or (not np.isfinite(weight).all()):
+        _debug_post(
+            "post-fix",
+            "B",
+            "probe6.centroid_probe_scores",
+            "[DEBUG] Non-finite values reached centroid scoring after stabilization",
+            {
+                "test_x_finite": bool(np.isfinite(test_x).all()),
+                "weight_finite": bool(np.isfinite(weight).all()),
+                "test_x_max_abs": float(np.nanmax(np.abs(test_x))) if test_x.size else 0.0,
+                "weight_max_abs": float(np.nanmax(np.abs(weight))) if weight.size else 0.0,
+            },
+        )
+        raise ValueError("Non-finite values reached centroid scoring.")
+    # Use a bounded elementwise accumulation instead of BLAS matmul to avoid
+    # platform-specific overflow warnings on tiny, degenerate high-d folds.
+    scores = np.sum(test_x * weight[np.newaxis, :], axis=1, dtype=np.float64) + bias
+    scores = np.clip(np.nan_to_num(scores, nan=0.0, posinf=SCORE_CLIP_ABS, neginf=-SCORE_CLIP_ABS), -SCORE_CLIP_ABS, SCORE_CLIP_ABS)
+    scores = np.asarray(scores, dtype=np.float64).reshape(-1)
+    preds = (scores >= 0.0).astype(np.int64)
+    return scores, preds
+
+
+def stabilize_scaled_features(x: np.ndarray) -> np.ndarray:
+    x = np.nan_to_num(x, nan=0.0, posinf=POST_SCALE_CLIP_ABS, neginf=-POST_SCALE_CLIP_ABS)
+    return np.clip(x, -POST_SCALE_CLIP_ABS, POST_SCALE_CLIP_ABS)
 
 
 def run_family_heldout_classification(
     examples: Sequence[Tuple[str, str, str]],
-    X_full: Sequence[np.ndarray],
-    y_full: Sequence[int],
-    groups_full: Sequence[str],
+    tensor: np.ndarray,
+    y: np.ndarray,
+    groups: np.ndarray,
     layer_count: int,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    n_examples = len(examples)
-    if n_examples == 0:
-        return [], []
-    tensor = np.stack(X_full, axis=0)
-    y = np.asarray(y_full, dtype=np.int64)
-    groups = np.asarray(groups_full, dtype=object)
+    *,
+    permute_seed: Optional[int] = None,
+    restrict_layers: Optional[set[int]] = None,
+) -> List[Dict[str, Any]]:
     logo = LeaveOneGroupOut()
-    fold_list = list(logo.split(np.arange(n_examples), y, groups=groups))
-    layerwise_rows: List[Dict[str, Any]] = []
-    per_example_rows: List[Dict[str, Any]] = []
-    family_ids_unique = sorted(set(groups_full))
-    n_families = len(family_ids_unique)
-    example_index_to_row_id = {idx: examples[idx] for idx in range(n_examples)}
-    n_folds = len(fold_list)
-    n_test_per_fold = [len(test_idx) for _, test_idx in fold_list]
-    max_test = max(n_test_per_fold) if n_test_per_fold else 0
-    y_true_per = np.zeros((n_folds, max_test), dtype=np.int64)
-    y_pred_per = np.zeros((n_folds, max_test), dtype=np.int64)
-    y_prob_per = np.zeros((n_folds, max_test), dtype=np.float64)
-    test_idx_per = np.zeros((n_folds, max_test), dtype=np.int64)
-    fold_ids_per = np.zeros((n_folds, max_test), dtype=np.int64)
-    valid_per_fold = np.asarray(n_test_per_fold, dtype=np.int64)
+    folds = list(logo.split(np.arange(len(examples)), y, groups=groups))
+    rows: List[Dict[str, Any]] = []
+
     for layer in range(layer_count):
+        if restrict_layers is not None and layer not in restrict_layers:
+            continue
         X_layer = tensor[:, layer, :]
-        for fold_id, (train_idx, test_idx) in enumerate(fold_list):
-            n_test = len(test_idx)
-            if n_test == 0:
+        y_true_all: List[np.ndarray] = []
+        y_pred_all: List[np.ndarray] = []
+        y_prob_all: List[np.ndarray] = []
+        baseline_all: List[np.ndarray] = []
+        valid_fold_ids: List[int] = []
+
+        for fold_id, (train_idx, test_idx) in enumerate(folds):
+            train_x = np.asarray(X_layer[train_idx], dtype=np.float64)
+            test_x = np.asarray(X_layer[test_idx], dtype=np.float64)
+            train_y = y[train_idx].copy()
+            test_y = y[test_idx]
+            # #region debug-point B-C:family-heldout-fold
+            pre_scale_train_max_abs = float(np.nanmax(np.abs(train_x))) if train_x.size else 0.0
+            pre_scale_test_max_abs = float(np.nanmax(np.abs(test_x))) if test_x.size else 0.0
+            pre_scale_train_finite = bool(np.isfinite(train_x).all())
+            pre_scale_test_finite = bool(np.isfinite(test_x).all())
+            if (not pre_scale_train_finite) or (not pre_scale_test_finite) or pre_scale_train_max_abs > 1e4 or pre_scale_test_max_abs > 1e4:
+                _debug_post(
+                    "pre-fix",
+                    "B",
+                    "probe6.run_family_heldout_classification",
+                    "[DEBUG] Suspicious feature magnitude before scaling",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "n_train": int(train_x.shape[0]),
+                        "n_test": int(test_x.shape[0]),
+                        "train_finite": pre_scale_train_finite,
+                        "test_finite": pre_scale_test_finite,
+                        "train_max_abs": pre_scale_train_max_abs,
+                        "test_max_abs": pre_scale_test_max_abs,
+                    },
+                )
+            label_values, label_counts = np.unique(train_y, return_counts=True)
+            if len(label_values) < 2 or int(np.min(label_counts)) < MIN_TRAIN_CLASS_COUNT:
+                _debug_post(
+                    "pre-fix",
+                    "C",
+                    "probe6.run_family_heldout_classification",
+                    "[DEBUG] Degenerate or near-degenerate train label split",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "labels": label_values.tolist(),
+                        "counts": label_counts.tolist(),
+                    },
+                )
+            # #endregion
+            if len(label_values) < 2 or int(np.min(label_counts)) < MIN_TRAIN_CLASS_COUNT:
                 continue
-            train_x = X_layer[train_idx]
-            test_x = X_layer[test_idx]
-            train_y = y[train_idx]
+            if permute_seed is not None:
+                rng = np.random.default_rng(permute_seed + layer * 1009 + fold_id)
+                train_y = rng.permutation(train_y)
             scaler = StandardScaler()
             train_x = scaler.fit_transform(train_x)
             test_x = scaler.transform(test_x)
-            model = LogisticRegression(
-                penalty="l2",
-                class_weight="balanced",
-                max_iter=10000,
-                C=1.0,
-            )
+            train_x = stabilize_scaled_features(train_x)
+            test_x = stabilize_scaled_features(test_x)
+            # #region debug-point B:family-heldout-post-scale
+            post_scale_train_max_abs = float(np.nanmax(np.abs(train_x))) if train_x.size else 0.0
+            post_scale_test_max_abs = float(np.nanmax(np.abs(test_x))) if test_x.size else 0.0
+            if (not np.isfinite(train_x).all()) or (not np.isfinite(test_x).all()) or post_scale_train_max_abs > 1e4 or post_scale_test_max_abs > 1e4:
+                _debug_post(
+                    "pre-fix",
+                    "B",
+                    "probe6.run_family_heldout_classification",
+                    "[DEBUG] Suspicious feature magnitude after scaling",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "train_max_abs": post_scale_train_max_abs,
+                        "test_max_abs": post_scale_test_max_abs,
+                        "train_finite": bool(np.isfinite(train_x).all()),
+                        "test_finite": bool(np.isfinite(test_x).all()),
+                        "permute_seed": permute_seed,
+                    },
+                )
+            # #endregion
+            if (not np.isfinite(train_x).all()) or (not np.isfinite(test_x).all()):
+                continue
             try:
-                model.fit(train_x, train_y)
-                prob = model.predict_proba(test_x)[:, 1]
-                pred = (prob >= 0.5).astype(np.int64)
+                y_prob, y_pred = centroid_probe_scores(train_x, train_y, test_x)
             except Exception:
-                prob = np.full(len(test_x), 0.5, dtype=np.float64)
-                pred = np.zeros(len(test_x), dtype=np.int64)
-            y_true_per[fold_id, :n_test] = y[test_idx]
-            y_pred_per[fold_id, :n_test] = pred
-            y_prob_per[fold_id, :n_test] = prob
-            test_idx_per[fold_id, :n_test] = np.asarray(test_idx, dtype=np.int64)
-            fold_ids_per[fold_id, :n_test] = np.asarray([fold_id] * n_test, dtype=np.int64)
-        masks_by_fold = [np.arange(max_test) < nv for nv in valid_per_fold]
-        flat_mask = np.concatenate(masks_by_fold)
-        y_true = y_true_per.reshape(-1)[flat_mask]
-        y_pred = y_pred_per.reshape(-1)[flat_mask]
-        y_prob = y_prob_per.reshape(-1)[flat_mask]
-        test_idx = test_idx_per.reshape(-1)[flat_mask]
-        fold_ids = fold_ids_per.reshape(-1)[flat_mask]
-        ba = balanced_accuracy_score(y_true, y_pred)
-        try:
-            auroc = roc_auc_score(y_true, y_prob) if len(set(y_true.tolist())) >= 2 else float("nan")
-        except Exception:
-            auroc = float("nan")
-        try:
-            ap = average_precision_score(y_true, y_prob) if len(set(y_true.tolist())) >= 2 else float("nan")
-        except Exception:
-            ap = float("nan")
-        f1 = f1_score(y_true, y_pred, zero_division=0)
-        prec = precision_score(y_true, y_pred, zero_division=0)
-        rec = recall_score(y_true, y_pred, zero_division=0)
-        cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
-        tn = int(cm[0, 0]) if cm.size >= 4 else 0
-        fp = int(cm[0, 1]) if cm.size >= 4 else 0
-        fn = int(cm[1, 0]) if cm.size >= 4 else 0
-        tp = int(cm[1, 1]) if cm.size >= 4 else 0
-        majority = np.bincount(y_true).argmax()
-        baseline_pred = np.full_like(y_true, majority)
-        baseline_ba = balanced_accuracy_score(y_true, baseline_pred)
-        layerwise_rows.append({
-            "layer": layer,
-            "n_examples": n_examples,
-            "n_families": n_families,
-            "balanced_accuracy": f"{ba:.6f}",
-            "auroc": "" if np.isnan(auroc) else f"{auroc:.6f}",
-            "average_precision": "" if np.isnan(ap) else f"{ap:.6f}",
-            "f1": f"{f1:.6f}",
-            "precision": f"{prec:.6f}",
-            "recall": f"{rec:.6f}",
-            "confusion_matrix": f"tn={tn} fp={fp} fn={fn} tp={tp}",
-            "baseline_balanced_accuracy": f"{baseline_ba:.6f}",
-        })
-        for i in range(len(y_true)):
-            row_ex_id = example_index_to_row_id[int(test_idx[i])]
-            fam, cond, anchor = row_ex_id
-            per_example_rows.append({
+                y_prob = np.full(len(test_x), 0.5, dtype=np.float64)
+                y_pred = np.zeros(len(test_x), dtype=np.int64)
+            y_true_all.append(test_y)
+            y_pred_all.append(y_pred)
+            y_prob_all.append(y_prob)
+            baseline_all.append(majority_baseline_predictions(train_y, len(test_y)))
+            valid_fold_ids.append(fold_id)
+
+        if not y_true_all:
+            continue
+        y_true = np.concatenate(y_true_all)
+        y_pred = np.concatenate(y_pred_all)
+        y_prob = np.concatenate(y_prob_all)
+        baseline_pred = np.concatenate(baseline_all)
+        metrics = evaluate_predictions(y_true, y_pred, y_prob, baseline_pred)
+        rows.append(
+            {
                 "layer": layer,
-                "family_id": fam,
-                "condition": cond,
-                "anchor": anchor,
-                "y_true": int(y_true[i]),
-                "y_pred": int(y_pred[i]),
-                "y_prob_harmful": float(y_prob[i]),
-                "fold_id": int(fold_ids[i]),
-            })
-    return layerwise_rows, per_example_rows
+                "n_examples": int(y_true.shape[0]),
+                "n_families": len(valid_fold_ids),
+                "balanced_accuracy": f"{metrics['balanced_accuracy']:.6f}",
+                "baseline_balanced_accuracy": f"{metrics['baseline_balanced_accuracy']:.6f}",
+                "auroc": "" if np.isnan(metrics["auroc"]) else f"{metrics['auroc']:.6f}",
+                "average_precision": "" if np.isnan(metrics["average_precision"]) else f"{metrics['average_precision']:.6f}",
+                "f1": f"{metrics['f1']:.6f}",
+                "precision": f"{metrics['precision']:.6f}",
+                "recall": f"{metrics['recall']:.6f}",
+                "confusion_matrix_counts": metrics["confusion_matrix_counts"],
+            }
+        )
+    return rows
 
 
-def best_balanced_accuracy(layerwise_rows: Sequence[Mapping[str, Any]]) -> Tuple[int, float]:
+def run_cross_condition_transfer(
+    source_examples: Sequence[Tuple[str, str, str]],
+    source_tensor: np.ndarray,
+    source_y: np.ndarray,
+    source_groups: np.ndarray,
+    target_examples: Sequence[Tuple[str, str, str]],
+    target_tensor: np.ndarray,
+    target_y: np.ndarray,
+    target_groups: np.ndarray,
+    layer_count: int,
+    *,
+    permute_seed: Optional[int] = None,
+    restrict_layers: Optional[set[int]] = None,
+) -> List[Dict[str, Any]]:
+    source_family_ids = sorted(set(source_groups.tolist()))
+    target_family_ids = sorted(set(target_groups.tolist()))
+    eval_family_ids = [family_id for family_id in target_family_ids if family_id in set(source_family_ids)]
+    rows: List[Dict[str, Any]] = []
+
+    for layer in range(layer_count):
+        if restrict_layers is not None and layer not in restrict_layers:
+            continue
+        source_layer = np.asarray(source_tensor[:, layer, :], dtype=np.float64)
+        target_layer = np.asarray(target_tensor[:, layer, :], dtype=np.float64)
+        y_true_all: List[np.ndarray] = []
+        y_pred_all: List[np.ndarray] = []
+        y_prob_all: List[np.ndarray] = []
+        baseline_all: List[np.ndarray] = []
+        valid_families: List[str] = []
+
+        for fold_id, family_id in enumerate(eval_family_ids):
+            train_mask = source_groups != family_id
+            test_mask = target_groups == family_id
+            if not train_mask.any() or not test_mask.any():
+                continue
+            train_x = source_layer[train_mask]
+            train_y = source_y[train_mask].copy()
+            test_x = target_layer[test_mask]
+            test_y = target_y[test_mask]
+            # #region debug-point B-C-D:cross-condition-fold
+            pre_scale_train_max_abs = float(np.nanmax(np.abs(train_x))) if train_x.size else 0.0
+            pre_scale_test_max_abs = float(np.nanmax(np.abs(test_x))) if test_x.size else 0.0
+            if (not np.isfinite(train_x).all()) or (not np.isfinite(test_x).all()) or pre_scale_train_max_abs > 1e4 or pre_scale_test_max_abs > 1e4:
+                _debug_post(
+                    "pre-fix",
+                    "D",
+                    "probe6.run_cross_condition_transfer",
+                    "[DEBUG] Suspicious cross-condition feature magnitude before scaling",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "heldout_family": family_id,
+                        "train_max_abs": pre_scale_train_max_abs,
+                        "test_max_abs": pre_scale_test_max_abs,
+                        "train_finite": bool(np.isfinite(train_x).all()),
+                        "test_finite": bool(np.isfinite(test_x).all()),
+                    },
+                )
+            label_values, label_counts = np.unique(train_y, return_counts=True)
+            if len(label_values) < 2 or int(np.min(label_counts)) < MIN_TRAIN_CLASS_COUNT:
+                _debug_post(
+                    "pre-fix",
+                    "C",
+                    "probe6.run_cross_condition_transfer",
+                    "[DEBUG] Degenerate or near-degenerate cross-condition train label split",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "heldout_family": family_id,
+                        "labels": label_values.tolist(),
+                        "counts": label_counts.tolist(),
+                    },
+                )
+            # #endregion
+            if len(label_values) < 2 or int(np.min(label_counts)) < MIN_TRAIN_CLASS_COUNT:
+                continue
+            if permute_seed is not None:
+                rng = np.random.default_rng(permute_seed + layer * 1009 + fold_id)
+                train_y = rng.permutation(train_y)
+            scaler = StandardScaler()
+            train_x = scaler.fit_transform(train_x)
+            test_x = scaler.transform(test_x)
+            train_x = stabilize_scaled_features(train_x)
+            test_x = stabilize_scaled_features(test_x)
+            # #region debug-point D:cross-condition-post-scale
+            if (not np.isfinite(train_x).all()) or (not np.isfinite(test_x).all()) or float(np.nanmax(np.abs(train_x))) > 1e4 or float(np.nanmax(np.abs(test_x))) > 1e4:
+                _debug_post(
+                    "pre-fix",
+                    "D",
+                    "probe6.run_cross_condition_transfer",
+                    "[DEBUG] Suspicious cross-condition feature magnitude after scaling",
+                    {
+                        "layer": layer,
+                        "fold_id": fold_id,
+                        "heldout_family": family_id,
+                        "train_max_abs": float(np.nanmax(np.abs(train_x))) if train_x.size else 0.0,
+                        "test_max_abs": float(np.nanmax(np.abs(test_x))) if test_x.size else 0.0,
+                        "train_finite": bool(np.isfinite(train_x).all()),
+                        "test_finite": bool(np.isfinite(test_x).all()),
+                        "permute_seed": permute_seed,
+                    },
+                )
+            # #endregion
+            if (not np.isfinite(train_x).all()) or (not np.isfinite(test_x).all()):
+                continue
+            try:
+                y_prob, y_pred = centroid_probe_scores(train_x, train_y, test_x)
+            except Exception:
+                y_prob = np.full(len(test_x), 0.5, dtype=np.float64)
+                y_pred = np.zeros(len(test_x), dtype=np.int64)
+            y_true_all.append(test_y)
+            y_pred_all.append(y_pred)
+            y_prob_all.append(y_prob)
+            baseline_all.append(majority_baseline_predictions(train_y, len(test_y)))
+            valid_families.append(family_id)
+
+        if not y_true_all:
+            continue
+        y_true = np.concatenate(y_true_all)
+        y_pred = np.concatenate(y_pred_all)
+        y_prob = np.concatenate(y_prob_all)
+        baseline_pred = np.concatenate(baseline_all)
+        metrics = evaluate_predictions(y_true, y_pred, y_prob, baseline_pred)
+        rows.append(
+            {
+                "layer": layer,
+                "n_examples": int(y_true.shape[0]),
+                "n_families": len(valid_families),
+                "balanced_accuracy": f"{metrics['balanced_accuracy']:.6f}",
+                "baseline_balanced_accuracy": f"{metrics['baseline_balanced_accuracy']:.6f}",
+                "auroc": "" if np.isnan(metrics["auroc"]) else f"{metrics['auroc']:.6f}",
+                "average_precision": "" if np.isnan(metrics["average_precision"]) else f"{metrics['average_precision']:.6f}",
+                "f1": f"{metrics['f1']:.6f}",
+                "precision": f"{metrics['precision']:.6f}",
+                "recall": f"{metrics['recall']:.6f}",
+                "confusion_matrix_counts": metrics["confusion_matrix_counts"],
+            }
+        )
+    return rows
+
+
+def best_result(layerwise_rows: Sequence[Mapping[str, Any]]) -> Tuple[int, float, float]:
     best_layer = -1
-    best_val = -1.0
-    for r in layerwise_rows:
-        v = float(r["balanced_accuracy"])
-        layer = int(r["layer"])
-        if v > best_val:
-            best_val = v
-            best_layer = layer
-    return best_layer, best_val
+    best_ba = -1.0
+    best_baseline = 0.0
+    for row in layerwise_rows:
+        ba = float(row["balanced_accuracy"])
+        if ba > best_ba:
+            best_layer = int(row["layer"])
+            best_ba = ba
+            best_baseline = float(row["baseline_balanced_accuracy"])
+    return best_layer, best_ba, best_baseline
+
+
+def label_count_dict(y: np.ndarray) -> Dict[int, int]:
+    values, counts = np.unique(np.asarray(y, dtype=np.int64), return_counts=True)
+    return {int(value): int(count) for value, count in zip(values.tolist(), counts.tolist())}
+
+
+def leave_one_family_out_supported(y: np.ndarray, min_train_class_count: int) -> Tuple[bool, Dict[int, int], str]:
+    counts = label_count_dict(y)
+    class0 = counts.get(0, 0)
+    class1 = counts.get(1, 0)
+    needed_total = min_train_class_count + 1
+    supported = class0 >= needed_total and class1 >= needed_total
+    note = (
+        f"class_counts=0:{class0},1:{class1}; need at least {needed_total} examples per class "
+        f"for leave-one-family-out training with min_train_class_count={min_train_class_count}"
+    )
+    return supported, counts, note
+
+
+def source_condition_supported(y: np.ndarray, min_train_class_count: int) -> Tuple[bool, Dict[int, int], str]:
+    counts = label_count_dict(y)
+    class0 = counts.get(0, 0)
+    class1 = counts.get(1, 0)
+    needed_total = min_train_class_count + 1
+    supported = class0 >= needed_total and class1 >= needed_total
+    note = (
+        f"source_class_counts=0:{class0},1:{class1}; need at least {needed_total} source examples per class "
+        f"so the held-out-family training split keeps min_train_class_count={min_train_class_count}"
+    )
+    return supported, counts, note
+
+
+def build_best_row(
+    analysis: str,
+    anchor: str,
+    pair: str,
+    *,
+    best_layer: int = -1,
+    best_ba: float = -1.0,
+    best_baseline: float = 0.0,
+    status: str = "ok",
+    support_note: str = "",
+    label_counts: Optional[Mapping[int, int]] = None,
+) -> Dict[str, Any]:
+    counts = dict(label_counts or {})
+    return {
+        "analysis": analysis,
+        "anchor": anchor,
+        "pair": pair,
+        "best_layer": best_layer,
+        "best_balanced_accuracy": f"{best_ba:.6f}",
+        "best_baseline_balanced_accuracy": f"{best_baseline:.6f}",
+        "status": status,
+        "support_note": support_note,
+        "n_label_0": counts.get(0, 0),
+        "n_label_1": counts.get(1, 0),
+    }
 
 
 def percentile(values: Sequence[float], q: float) -> float:
     if not values:
         return 0.0
     return float(np.percentile(np.asarray(values, dtype=np.float64), q))
+
+
+def is_detectable(best_ba: float, threshold: float) -> bool:
+    return best_ba >= threshold
+
+
+def summarize_table(
+    lines: List[str],
+    title: str,
+    analysis_name: str,
+    best_rows: Sequence[Mapping[str, Any]],
+) -> None:
+    lines.append(f"== {title} ==")
+    subset = [row for row in best_rows if row["analysis"] == analysis_name]
+    if not subset:
+        lines.append("No results.")
+        lines.append("")
+        return
+    pair_names = sorted({str(row["pair"]) for row in subset})
+    header = f"{'pair':<72s}" + "".join(f"{ANCHOR_DISPLAY[anchor][:5]:>11s}" for anchor in ANCHOR_ORDER)
+    lines.append(header)
+    lookup = {(str(row["pair"]), str(row["anchor"])): row for row in subset}
+    for pair_name in pair_names:
+        cells: List[str] = []
+        for anchor in ANCHOR_ORDER:
+            row = lookup.get((pair_name, anchor))
+            if row is None:
+                cells.append("    -    ")
+            elif str(row.get("status", "ok")) != "ok":
+                cells.append("  UNSUP  ")
+            else:
+                cells.append(f"{float(row['best_balanced_accuracy']):.3f}@L{int(row['best_layer']):02d}")
+        lines.append(f"{pair_name:<72s}" + "".join(f"{cell:>11s}" for cell in cells))
+    lines.append("")
 
 
 def main() -> None:
@@ -731,460 +1157,477 @@ def main() -> None:
     parser.add_argument("--activation-output-root", default=str(REPO_ROOT / DEFAULT_ACTIVATION_OUTPUT_ROOT))
     parser.add_argument("--activation-root", default=None, type=str, help="If set, skip extraction and load activations from this directory.")
     parser.add_argument("--force-reextract", action="store_true")
-    parser.add_argument("--skip-extraction", action="store_true", help="Use existing activation output root directly.")
+    parser.add_argument("--skip-extraction", action="store_true", help="Use an existing activation output root directly.")
     parser.add_argument("--output-layerwise", default=str(REPO_ROOT / DEFAULT_LAYERWISE_OUTPUT))
     parser.add_argument("--output-summary", default=str(REPO_ROOT / DEFAULT_SUMMARY_OUTPUT))
     parser.add_argument("--output-best", default=str(REPO_ROOT / DEFAULT_BEST_LAYERS_OUTPUT))
-    parser.add_argument(
-        "--permutation-pairs",
-        type=int,
-        default=100,
-        help="Number of permutations for the strongest-early-result permutation control.",
-    )
+    parser.add_argument("--permutation-pairs", type=int, default=100)
     parser.add_argument("--skip-permutation", action="store_true")
-    parser.add_argument("--only-extract-and-exit", action="store_true", help="Worker mode: only run extraction then exit.")
-    parser.add_argument("--only-family-conditions", default="", help="Comma separated list of family_id=condition pairs. Worker mode will extract ONLY these pairs, then exit.")
-    parser.add_argument("--worker-batch-index", type=int, default=-1, help="0-indexed batch id (driver helper).")
-    parser.add_argument("--worker-total-batches", type=int, default=-1, help="Total worker batches (driver helper).")
+    parser.add_argument("--detectable-threshold", type=float, default=DEFAULT_DETECTABLE_THRESHOLD)
+    parser.add_argument("--only-extract-and-exit", action="store_true")
+    parser.add_argument("--only-family-conditions", default="")
+    parser.add_argument("--worker-batch-index", type=int, default=-1)
+    parser.add_argument("--worker-total-batches", type=int, default=-1)
     args = parser.parse_args()
 
-    jsonl_rows = read_jsonl(Path(args.input))
-    family_deltas = read_family_deltas(Path(args.family_deltas))
+    input_path = resolve_required_path(
+        args.input,
+        "state/logit extraction JSONL",
+        "Run src/extraction/extract_multi_family_states_and_logits.py first.",
+    )
+    family_deltas_path = resolve_required_path(
+        args.family_deltas,
+        "family delta CSV",
+        "Run src/analysis/compute_qwen3_4b_family36_family_margin_deltas.py after the state/logit extraction step.",
+    )
 
-    activation_root: Path
+    jsonl_rows = read_jsonl(input_path)
+    family_deltas = read_family_deltas(family_deltas_path)
+
     if args.activation_root:
         activation_root = Path(args.activation_root)
+        if not activation_root.is_absolute():
+            activation_root = (REPO_ROOT / activation_root).resolve()
     elif args.skip_extraction:
         activation_root = Path(args.activation_output_root)
+        if not activation_root.is_absolute():
+            activation_root = (REPO_ROOT / activation_root).resolve()
     else:
         manifest = extract_early_activations(args)
         print(json.dumps({"status": "extraction_complete", "manifest": str(manifest)}), flush=True)
         activation_root = Path(args.activation_output_root)
-    if getattr(args, "only_extract_and_exit", False):
+        if not activation_root.is_absolute():
+            activation_root = (REPO_ROOT / activation_root).resolve()
+
+    if args.only_extract_and_exit:
         print(json.dumps({"status": "worker_mode_exit_after_extraction"}), flush=True)
         return
+    if not activation_root.exists():
+        raise FileNotFoundError(
+            f"Missing early-position activation directory: {activation_root}\n"
+            "Run this script without --skip-extraction, or point --activation-root at a completed early-position extraction folder."
+        )
 
     print(json.dumps({"status": "collecting_dataset", "activation_root": str(activation_root)}), flush=True)
     deltas, metadata, layer_count = collect_dataset(jsonl_rows, family_deltas, activation_root)
     print(json.dumps({"status": "dataset_collected", "layer_count": layer_count, "n_examples": len(deltas)}), flush=True)
+    if not deltas or layer_count <= 0:
+        raise RuntimeError("No early-position delta tensors were collected.")
 
     overall_layerwise_rows: List[Dict[str, Any]] = []
     best_rows: List[Dict[str, Any]] = []
 
-    # 1. Overall harmful vs nonharmful (all 3 conditions pooled) -- but we must do anchor separately for family structure to be preserved:
-    # Actually run separate probes per (analysis_type, anchor, source, target) but structured so overall harmful pools all 3 conds as
-    # rows within the same fold. For cross-condition transfer, we use only rows from source/target condition at the anchor.
-
-    def build_rows_for_filter(filter_fn) -> List[Tuple[str, str, str]]:
-        rows = [k for k in deltas.keys() if filter_fn(k, metadata[k])]
-        rows.sort()
-        return rows
-
-    anchor_probe_specs: List[Dict[str, Any]] = []
     for anchor in ANCHOR_ORDER:
-        anchor_probe_specs.append({
-            "analysis": "overall_harmful",
-            "anchor": anchor,
-            "pair_name": "all_conditions_pooled",
-            "source_condition": None,
-            "target_condition": None,
-        })
-        for cond in CONDITIONS:
-            anchor_probe_specs.append({
-                "analysis": "within_condition",
-                "anchor": anchor,
-                "pair_name": cond,
-                "source_condition": cond,
-                "target_condition": cond,
-            })
-        for s in CONDITIONS:
-            for t in CONDITIONS:
-                if s == t:
-                    continue
-                anchor_probe_specs.append({
-                    "analysis": "cross_condition",
-                    "anchor": anchor,
-                    "pair_name": f"{s}_to_{t}",
-                    "source_condition": s,
-                    "target_condition": t,
-                })
+        pooled_keys = sorted(
+            key
+            for key, meta in metadata.items()
+            if meta["anchor"] == anchor and meta["condition"] in CONDITIONS and meta["harmful_label_primary"] is not None
+        )
+        if pooled_keys:
+            pooled_tensor = np.stack([deltas[key] for key in pooled_keys], axis=0)
+            pooled_y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in pooled_keys], dtype=np.int64)
+            pooled_groups = np.asarray([str(metadata[key]["family_id"]) for key in pooled_keys], dtype=object)
+            rows = run_family_heldout_classification(pooled_keys, pooled_tensor, pooled_y, pooled_groups, layer_count)
+            best_layer, best_ba, best_baseline = best_result(rows)
+            best_rows.append(build_best_row("overall_harmful", anchor, "all_conditions_pooled", best_layer=best_layer, best_ba=best_ba, best_baseline=best_baseline, label_counts=label_count_dict(pooled_y)))
+            for row in rows:
+                overall_layerwise_rows.append({"analysis": "overall_harmful", "anchor": anchor, "pair": "all_conditions_pooled", **row})
 
-    def filter_keys(spec: Dict[str, Any], k: Tuple[str, str, str]) -> bool:
-        fam, cond, anchor = k
-        if anchor != spec["anchor"]:
-            return False
-        analysis = spec["analysis"]
-        if analysis == "overall_harmful":
-            return cond in CONDITIONS
-        if analysis == "within_condition":
-            return cond == spec["source_condition"]
-        if analysis == "cross_condition":
-            s = spec["source_condition"]
-            t = spec["target_condition"]
-            return cond in (s, t)
-        return False
-
-    n_specs = len(anchor_probe_specs)
-    for si, spec in enumerate(anchor_probe_specs):
-        keys = [k for k in deltas.keys() if filter_keys(spec, k)]
-        keys.sort()
-        X_list: List[np.ndarray] = []
-        y_list: List[int] = []
-        groups_list: List[str] = []
-        for k in keys:
-            meta = metadata[k]
-            lab = meta.get("harmful_label_primary")
-            if lab is None:
+        for condition in CONDITIONS:
+            condition_keys = sorted(
+                key
+                for key, meta in metadata.items()
+                if meta["anchor"] == anchor and meta["condition"] == condition and meta["harmful_label_primary"] is not None
+            )
+            if not condition_keys:
                 continue
-            X_list.append(deltas[k])
-            y_list.append(int(lab))
-            groups_list.append(meta["family_id"])
-        if not X_list:
-            continue
-        analysis = spec["analysis"]
-        anchor = spec["anchor"]
-        pair_name = spec["pair_name"]
-        print(json.dumps({
-            "status": "running_probe_spec",
-            "index": si + 1,
-            "total": n_specs,
-            "analysis": analysis,
-            "anchor": anchor,
-            "pair": pair_name,
-            "n": len(X_list),
-            "n_families": len(set(groups_list)),
-            "harmful_rate": float(np.mean(y_list)),
-        }), flush=True)
-        lw, pe = run_family_heldout_classification(keys, X_list, y_list, groups_list, layer_count)
-        best_layer, best_ba = best_balanced_accuracy(lw)
-        best_rows.append({
-            "analysis": analysis,
-            "anchor": anchor,
-            "pair": pair_name,
-            "best_layer": best_layer,
-            "best_balanced_accuracy": f"{best_ba:.6f}",
-        })
-        for r in lw:
-            overall_layerwise_rows.append({
-                "analysis": analysis,
-                "anchor": anchor,
-                "pair": pair_name,
-                **r,
-            })
-        if pe:
-            pass  # We don't emit per-example predictions by default to keep output small; can add flag later.
+            tensor = np.stack([deltas[key] for key in condition_keys], axis=0)
+            y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in condition_keys], dtype=np.int64)
+            groups = np.asarray([str(metadata[key]["family_id"]) for key in condition_keys], dtype=object)
+            supported, counts, note = leave_one_family_out_supported(y, MIN_TRAIN_CLASS_COUNT)
+            if not supported:
+                best_rows.append(
+                    build_best_row(
+                        "within_condition",
+                        anchor,
+                        condition,
+                        status="unsupported",
+                        support_note=note,
+                        label_counts=counts,
+                    )
+                )
+                continue
+            rows = run_family_heldout_classification(condition_keys, tensor, y, groups, layer_count)
+            best_layer, best_ba, best_baseline = best_result(rows)
+            best_rows.append(build_best_row("within_condition", anchor, condition, best_layer=best_layer, best_ba=best_ba, best_baseline=best_baseline, label_counts=counts))
+            for row in rows:
+                overall_layerwise_rows.append({"analysis": "within_condition", "anchor": anchor, "pair": condition, **row})
+
+        for source_condition in CONDITIONS:
+            for target_condition in CONDITIONS:
+                if source_condition == target_condition:
+                    continue
+                source_keys = sorted(
+                    key
+                    for key, meta in metadata.items()
+                    if meta["anchor"] == anchor
+                    and meta["condition"] == source_condition
+                    and meta["harmful_label_primary"] is not None
+                )
+                target_keys = sorted(
+                    key
+                    for key, meta in metadata.items()
+                    if meta["anchor"] == anchor
+                    and meta["condition"] == target_condition
+                    and meta["harmful_label_primary"] is not None
+                )
+                if not source_keys or not target_keys:
+                    continue
+                source_tensor = np.stack([deltas[key] for key in source_keys], axis=0)
+                source_y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in source_keys], dtype=np.int64)
+                source_groups = np.asarray([str(metadata[key]["family_id"]) for key in source_keys], dtype=object)
+                target_tensor = np.stack([deltas[key] for key in target_keys], axis=0)
+                target_y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in target_keys], dtype=np.int64)
+                target_groups = np.asarray([str(metadata[key]["family_id"]) for key in target_keys], dtype=object)
+                pair_name = f"{source_condition}_to_{target_condition}"
+                supported, counts, note = source_condition_supported(source_y, MIN_TRAIN_CLASS_COUNT)
+                if not supported:
+                    best_rows.append(
+                        build_best_row(
+                            "cross_condition",
+                            anchor,
+                            pair_name,
+                            status="unsupported",
+                            support_note=note,
+                            label_counts=counts,
+                        )
+                    )
+                    continue
+                rows = run_cross_condition_transfer(
+                    source_keys,
+                    source_tensor,
+                    source_y,
+                    source_groups,
+                    target_keys,
+                    target_tensor,
+                    target_y,
+                    target_groups,
+                    layer_count,
+                )
+                if not rows:
+                    best_rows.append(
+                        build_best_row(
+                            "cross_condition",
+                            anchor,
+                            pair_name,
+                            status="unsupported",
+                            support_note="No valid held-out-family evaluation rows were produced.",
+                            label_counts=counts,
+                        )
+                    )
+                    continue
+                best_layer, best_ba, best_baseline = best_result(rows)
+                best_rows.append(build_best_row("cross_condition", anchor, pair_name, best_layer=best_layer, best_ba=best_ba, best_baseline=best_baseline, label_counts=counts))
+                for row in rows:
+                    overall_layerwise_rows.append({"analysis": "cross_condition", "anchor": anchor, "pair": pair_name, **row})
 
     output_layerwise = Path(args.output_layerwise)
     output_summary = Path(args.output_summary)
     output_best = Path(args.output_best)
+    for path in (output_layerwise, output_summary, output_best):
+        if not path.is_absolute():
+            path = (REPO_ROOT / path).resolve()
+    output_layerwise = output_layerwise if output_layerwise.is_absolute() else (REPO_ROOT / output_layerwise).resolve()
+    output_summary = output_summary if output_summary.is_absolute() else (REPO_ROOT / output_summary).resolve()
+    output_best = output_best if output_best.is_absolute() else (REPO_ROOT / output_best).resolve()
     output_layerwise.parent.mkdir(parents=True, exist_ok=True)
+    output_summary.parent.mkdir(parents=True, exist_ok=True)
+    output_best.parent.mkdir(parents=True, exist_ok=True)
+
     if overall_layerwise_rows:
-        fieldnames = list(overall_layerwise_rows[0].keys())
-        with output_layerwise.open("w", encoding="utf-8", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=fieldnames)
-            w.writeheader()
-            w.writerows(overall_layerwise_rows)
-    fieldnames_best = list(best_rows[0].keys()) if best_rows else []
-    with output_best.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames_best)
-        w.writeheader()
-        w.writerows(best_rows)
+        with output_layerwise.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(overall_layerwise_rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(overall_layerwise_rows)
+
+    with output_best.open("w", encoding="utf-8", newline="") as handle:
+        fieldnames = list(best_rows[0].keys()) if best_rows else ["analysis", "anchor", "pair", "best_layer", "best_balanced_accuracy", "best_baseline_balanced_accuracy"]
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(best_rows)
 
     lines: List[str] = []
     lines.append("Probe 6: early-position harmfulness detection (Qwen3-4B-Instruct-2507 36-family)")
     lines.append("")
-    lines.append("Features: Δ = h(condition) - h(evidence_neutral) at anchor position")
-    lines.append("Classifier: L2 logistic regression, class_weight=balanced, family-held-out (LeaveOneGroupOut)")
+    lines.append("Features: Δ = h(condition, anchor) - h(evidence_neutral, anchor)")
+    lines.append("Classifier: linear centroid probe on z-scored features")
+    lines.append("Evaluation:")
+    lines.append("  - overall and within-condition: leave-one-family-out")
+    lines.append("  - cross-condition: train on source condition from non-held-out families, test on target condition for held-out family")
+    lines.append("  - scaler fit only on each training fold")
+    lines.append(f"  - analyses marked UNSUP require at least {MIN_TRAIN_CLASS_COUNT + 1} examples in each class for the training side of a held-out-family split")
     lines.append(f"Layer count: {layer_count}")
+    lines.append(f"Detectable threshold used in summary questions: balanced accuracy >= {args.detectable_threshold:.2f}")
     lines.append("")
     lines.append("Anchor order:")
-    for i, anc in enumerate(ANCHOR_ORDER):
-        lines.append(f"  {i}. {ANCHOR_DISPLAY[anc]}")
+    for index, anchor in enumerate(ANCHOR_ORDER):
+        lines.append(f"  {index}. {ANCHOR_DISPLAY[anchor]}")
     lines.append("")
 
-    def emit_block(analysis_filter: str, title: str) -> None:
-        lines.append(f"== {title} ==")
-        pairs_ordered: List[str] = []
-        if analysis_filter == "overall_harmful":
-            pairs_ordered = ["all_conditions_pooled"]
-        elif analysis_filter == "within_condition":
-            pairs_ordered = list(CONDITIONS)
-        elif analysis_filter == "cross_condition":
-            pairs_ordered = [f"{s}_to_{t}" for s in CONDITIONS for t in CONDITIONS if s != t]
-        best_by_pair_anchor: Dict[Tuple[str, str], Tuple[int, float]] = {}
-        for r in best_rows:
-            if r["analysis"] != analysis_filter:
-                continue
-            best_by_pair_anchor[(r["pair"], r["anchor"])] = (int(r["best_layer"]), float(r["best_balanced_accuracy"]))
-        lines.append("")
-        header = f"{'pair':<72s}" + "".join(f"{ANCHOR_DISPLAY[anc][:5]:>9s}" for anc in ANCHOR_ORDER)
-        lines.append(header)
-        for pair in pairs_ordered:
-            cells: List[str] = []
-            for anc in ANCHOR_ORDER:
-                key = (pair, anc)
-                if key in best_by_pair_anchor:
-                    lyr, val = best_by_pair_anchor[key]
-                    cells.append(f"{val:6.3f}@L{lyr:<2d}")
-                else:
-                    cells.append("    -   ")
-            lines.append(f"{pair:<72s}" + "".join(f"{c:>9s}" for c in cells))
-        lines.append("")
+    summarize_table(lines, "1. Overall harmful vs nonharmful (3 conditions pooled)", "overall_harmful", best_rows)
+    summarize_table(lines, "2. Within-condition harmfulness", "within_condition", best_rows)
+    summarize_table(lines, "3. Cross-condition harmfulness transfer", "cross_condition", best_rows)
 
-    emit_block("overall_harmful", "1. Overall harmful vs nonharmful (3 conditions pooled)")
-    emit_block("within_condition", "2. Within-condition harmfulness")
-    emit_block("cross_condition", "3. Cross-condition harmfulness transfer")
+    best_lookup = {(str(row["analysis"]), str(row["pair"]), str(row["anchor"])): row for row in best_rows}
 
-    # Now answer the 5 specific summary questions.
+    def best_for(analysis: str, pair: str, anchor: str) -> Optional[Tuple[int, float]]:
+        row = best_lookup.get((analysis, pair, anchor))
+        if row is None:
+            return None
+        if str(row.get("status", "ok")) != "ok":
+            return None
+        return int(row["best_layer"]), float(row["best_balanced_accuracy"])
+
+    def support_row(analysis: str, pair: str, anchor: str) -> Optional[Mapping[str, Any]]:
+        return best_lookup.get((analysis, pair, anchor))
+
     lines.append("== Summary answers ==")
 
-    overall_by_anchor: Dict[str, Tuple[int, float]] = {}
-    within_by: Dict[Tuple[str, str], Tuple[int, float]] = {}
-    cross_by: Dict[Tuple[str, str], Tuple[int, float]] = {}
-    for r in best_rows:
-        pair = r["pair"]
-        anchor = r["anchor"]
-        val = (int(r["best_layer"]), float(r["best_balanced_accuracy"]))
-        if r["analysis"] == "overall_harmful":
-            overall_by_anchor[anchor] = val
-        elif r["analysis"] == "within_condition":
-            within_by[(pair, anchor)] = val
-        elif r["analysis"] == "cross_condition":
-            cross_by[(pair, anchor)] = val
-
-    # Q1: earliest anchor overall where harmfulness is detectable (threshold BA > baseline, i.e. > majority)
-    # For each anchor, compute majority baseline for overall analysis via a dummy: approximate by >0.5 since label balanced via balanced_weighting?
-    # Actually read the stored layerwise baseline. Simpler: just take max BA per anchor over layer; if >0.55 call it detectable, and order.
-    lines.append("Q1. What is the earliest anchor where harmfulness is detectable (overall pooled)?")
-    detected_order: List[str] = []
-    for anc in ANCHOR_ORDER:
-        if anc in overall_by_anchor and overall_by_anchor[anc][1] > 0.55:
-            detected_order.append(anc)
-    if detected_order:
-        earliest = detected_order[0]
-        lyr, val = overall_by_anchor[earliest]
-        lines.append(f"  Earliest detectable anchor: {ANCHOR_DISPLAY[earliest]}  (best BA {val:.3f} @ layer {lyr})")
+    lines.append("Q1. What is the earliest anchor where harmfulness is detectable?")
+    overall_detectable = [
+        anchor
+        for anchor in ANCHOR_ORDER
+        if best_for("overall_harmful", "all_conditions_pooled", anchor)
+        and is_detectable(best_for("overall_harmful", "all_conditions_pooled", anchor)[1], args.detectable_threshold)
+    ]
+    if overall_detectable:
+        anchor = overall_detectable[0]
+        layer, ba = best_for("overall_harmful", "all_conditions_pooled", anchor)
+        lines.append(f"  Earliest detectable anchor: {ANCHOR_DISPLAY[anchor]} (BA {ba:.3f} @ layer {layer})")
     else:
-        lines.append("  No anchor exceeded 0.55 balanced accuracy.")
-    lines.append("  Per-anchor overall best balanced accuracy:")
-    for anc in ANCHOR_ORDER:
-        if anc in overall_by_anchor:
-            lyr, val = overall_by_anchor[anc]
-            lines.append(f"    {ANCHOR_DISPLAY[anc]}: BA {val:.3f} @ layer {lyr}")
+        lines.append("  No anchor met the detectable threshold.")
+    for anchor in ANCHOR_ORDER:
+        value = best_for("overall_harmful", "all_conditions_pooled", anchor)
+        if value is not None:
+            layer, ba = value
+            lines.append(f"    {ANCHOR_DISPLAY[anchor]}: BA {ba:.3f} @ layer {layer}")
     lines.append("")
 
-    # Q2: false_pressure within: earliest detectable before final?
-    lines.append("Q2. Is false_pressure within-condition harmfulness detectable before ANSWER position?")
-    false_before: List[str] = []
-    for anc in ANCHOR_ORDER:
-        if anc == "final_answer_position":
-            break
-        key = ("evidence_false_belief_pressure", anc)
-        if key in within_by and within_by[key][1] > 0.55:
-            false_before.append(anc)
-    final_key = ("evidence_false_belief_pressure", "final_answer_position")
-    final_val = within_by.get(final_key, (-1, 0.0))
-    if false_before:
-        first = false_before[0]
-        lyr, val = within_by[(final_key[0], first)]
-        lines.append(f"  YES. Earliest before-final anchor: {ANCHOR_DISPLAY[first]}  (BA {val:.3f} @ layer {lyr})")
+    lines.append("Q2. Is false_pressure detectable before ANSWER, or only at ANSWER?")
+    false_pre_final = [
+        anchor
+        for anchor in ANCHOR_ORDER[:-1]
+        if best_for("within_condition", "evidence_false_belief_pressure", anchor)
+        and is_detectable(best_for("within_condition", "evidence_false_belief_pressure", anchor)[1], args.detectable_threshold)
+    ]
+    false_final = best_for("within_condition", "evidence_false_belief_pressure", "final_answer_position")
+    if false_pre_final:
+        anchor = false_pre_final[0]
+        layer, ba = best_for("within_condition", "evidence_false_belief_pressure", anchor)
+        lines.append(f"  Detectable before ANSWER: {ANCHOR_DISPLAY[anchor]} (BA {ba:.3f} @ layer {layer})")
+    elif false_final is not None:
+        lines.append(f"  Only at ANSWER by this threshold: BA {false_final[1]:.3f} @ layer {false_final[0]}")
     else:
-        lines.append(f"  NO. Best before-final did not exceed 0.55. Final-answer baseline BA {final_val[1]:.3f} @ layer {final_val[0]}.")
-    lines.append("  False-pressure within per-anchor:")
-    for anc in ANCHOR_ORDER:
-        key = ("evidence_false_belief_pressure", anc)
-        if key in within_by:
-            lyr, val = within_by[key]
-            lines.append(f"    {ANCHOR_DISPLAY[anc]}: BA {val:.3f} @ layer {lyr}")
+        support = support_row("within_condition", "evidence_false_belief_pressure", "final_answer_position")
+        if support is not None and str(support.get("status", "ok")) != "ok":
+            lines.append(f"  Unsupported for this dataset: {support.get('support_note', '').strip()}")
+        else:
+            lines.append("  No false-pressure result was available.")
     lines.append("")
 
-    # Q3: emotional pressure earliest vs false pressure earliest
-    lines.append("Q3. Is emotional pressure detectable earlier than false-belief pressure?")
-    def earliest_within(cond: str) -> Optional[str]:
-        out = None
-        for anc in ANCHOR_ORDER:
-            key = (cond, anc)
-            if key in within_by and within_by[key][1] > 0.55:
-                return anc
+    lines.append("Q3. Is emotional pressure detectable earlier than false_pressure?")
+    def earliest_detectable_within(condition: str) -> Optional[str]:
+        for anchor in ANCHOR_ORDER:
+            value = best_for("within_condition", condition, anchor)
+            if value is not None and is_detectable(value[1], args.detectable_threshold):
+                return anchor
         return None
-    f_earliest = earliest_within("evidence_false_belief_pressure")
-    e_earliest = earliest_within("evidence_emotional_pressure")
-    idx_f = ANCHOR_ORDER.index(f_earliest) if f_earliest else len(ANCHOR_ORDER)
-    idx_e = ANCHOR_ORDER.index(e_earliest) if e_earliest else len(ANCHOR_ORDER)
-    f_val = within_by.get(("evidence_false_belief_pressure", f_earliest), (-1, 0.0))[1] if f_earliest else 0.0
-    e_val = within_by.get(("evidence_emotional_pressure", e_earliest), (-1, 0.0))[1] if e_earliest else 0.0
-    lines.append(f"  False pressure earliest anchor: {ANCHOR_DISPLAY[f_earliest] if f_earliest else 'NONE'} (BA {f_val:.3f})")
-    lines.append(f"  Emotional pressure earliest anchor: {ANCHOR_DISPLAY[e_earliest] if e_earliest else 'NONE'} (BA {e_val:.3f})")
-    if idx_e < idx_f:
-        lines.append("  YES: emotional pressure is detectable earlier than false-belief pressure.")
-    elif idx_e == idx_f and idx_e < len(ANCHOR_ORDER):
-        lines.append("  SAME: both pressures are first detectable at the same anchor.")
+
+    false_anchor = earliest_detectable_within("evidence_false_belief_pressure")
+    emotional_anchor = earliest_detectable_within("evidence_emotional_pressure")
+    false_support = support_row("within_condition", "evidence_false_belief_pressure", "final_answer_position")
+    emotional_support = support_row("within_condition", "evidence_emotional_pressure", "final_answer_position")
+    lines.append(f"  False-pressure earliest detectable anchor: {ANCHOR_DISPLAY[false_anchor] if false_anchor else 'NONE'}")
+    lines.append(f"  Emotional-pressure earliest detectable anchor: {ANCHOR_DISPLAY[emotional_anchor] if emotional_anchor else 'NONE'}")
+    if false_support is not None and str(false_support.get("status", "ok")) != "ok":
+        lines.append(f"  False-pressure within-condition analysis is unsupported: {false_support.get('support_note', '').strip()}")
+    if emotional_support is not None and str(emotional_support.get("status", "ok")) != "ok":
+        lines.append(f"  Emotional-pressure within-condition analysis is unsupported: {emotional_support.get('support_note', '').strip()}")
+    if emotional_anchor and false_anchor:
+        if ANCHOR_ORDER.index(emotional_anchor) < ANCHOR_ORDER.index(false_anchor):
+            lines.append("  Yes: emotional pressure appears earlier than false pressure.")
+        elif ANCHOR_ORDER.index(emotional_anchor) == ANCHOR_ORDER.index(false_anchor):
+            lines.append("  They first appear at the same anchor.")
+        else:
+            lines.append("  No: emotional pressure does not appear earlier than false pressure.")
+    elif emotional_anchor and not false_anchor:
+        if false_support is not None and str(false_support.get("status", "ok")) != "ok":
+            lines.append("  Emotional pressure is detectable earlier, but false pressure is unsupported rather than a clean negative.")
+        else:
+            lines.append("  Emotional pressure is detectable; false pressure did not reach the threshold.")
+    elif false_anchor and not emotional_anchor:
+        lines.append("  False pressure is detectable; emotional pressure did not reach the threshold.")
     else:
-        lines.append("  NO: emotional pressure is NOT detectable earlier than false-belief pressure.")
+        lines.append("  Neither condition reached the threshold.")
     lines.append("")
 
-    # Q4: false <-> emotional cross transfer before final ANSWER?
-    lines.append("Q4. Does false⇄emotional transfer survive before the final ANSWER position?")
-    pairs_false_emot = [
+    lines.append("Q4. Does false ⇄ emotional transfer survive before ANSWER?")
+    transfer_pairs = [
         "evidence_false_belief_pressure_to_evidence_emotional_pressure",
         "evidence_emotional_pressure_to_evidence_false_belief_pressure",
     ]
-    for p in pairs_false_emot:
-        lines.append(f"  Pair {p}:")
-        for anc in ANCHOR_ORDER:
-            key = (p, anc)
-            if key in cross_by:
-                lyr, val = cross_by[key]
-                lines.append(f"    {ANCHOR_DISPLAY[anc]}: BA {val:.3f} @ layer {lyr}")
-    before_final_ok: List[str] = []
-    for p in pairs_false_emot:
-        ok_anchors = []
-        for anc in ANCHOR_ORDER:
-            if anc == "final_answer_position":
+    successful_transfers = []
+    for pair in transfer_pairs:
+        earliest_pair_anchor = None
+        for anchor in ANCHOR_ORDER[:-1]:
+            value = best_for("cross_condition", pair, anchor)
+            if value is not None and is_detectable(value[1], args.detectable_threshold):
+                earliest_pair_anchor = anchor
+                successful_transfers.append(pair)
                 break
-            key = (p, anc)
-            if key in cross_by and cross_by[key][1] > 0.55:
-                ok_anchors.append(anc)
-        if ok_anchors:
-            before_final_ok.append(f"{ok_anchors[0]}")
-    if len(before_final_ok) == 2:
-        lines.append("  YES: both directions of false⇄emotional transfer exceed 0.55 BA before the final ANSWER position.")
-    elif len(before_final_ok) == 1:
-        lines.append("  PARTIAL: one direction of false⇄emotional transfer exceeds 0.55 BA before final; the other does not.")
+        support = support_row("cross_condition", pair, "final_answer_position")
+        if support is not None and str(support.get("status", "ok")) != "ok":
+            lines.append(f"  {pair}: unsupported ({support.get('support_note', '').strip()})")
+        else:
+            lines.append(f"  {pair}: {ANCHOR_DISPLAY[earliest_pair_anchor] if earliest_pair_anchor else 'no pre-ANSWER detection'}")
+    if len(successful_transfers) == 2:
+        lines.append("  Yes: both transfer directions survive before ANSWER.")
+    elif len(successful_transfers) == 1:
+        lines.append("  Partial: one direction survives before ANSWER.")
     else:
-        lines.append("  NO: neither direction of false⇄emotional transfer exceeds 0.55 BA before the final ANSWER position.")
+        lines.append("  No: neither direction survives before ANSWER.")
     lines.append("")
 
-    # Q5: strongest early-position result permutation control. Pick anchor before final with best BA across all (analysis,pair,anchor) combos.
-    best_before_final: Optional[Tuple[float, Dict[str, Any]]] = None
-    for r in best_rows:
-        anc = r["anchor"]
-        if anc == "final_answer_position":
+    lines.append("Q5. Does early-position performance survive a permutation control for the strongest result?")
+    best_pre_final_row: Optional[Mapping[str, Any]] = None
+    best_pre_final_value = -1.0
+    for row in best_rows:
+        if row["anchor"] == "final_answer_position":
             continue
-        val = float(r["best_balanced_accuracy"])
-        if best_before_final is None or val > best_before_final[0]:
-            best_before_final = (val, r)
-    lines.append("Q5. Does the strongest early-position (pre-final-ANSWER) result survive the permutation control?")
-    if best_before_final is None:
-        lines.append("  N/A: no pre-final results available.")
-        permutation_header_done = True
+        if str(row.get("status", "ok")) != "ok":
+            continue
+        value = float(row["best_balanced_accuracy"])
+        if value > best_pre_final_value:
+            best_pre_final_value = value
+            best_pre_final_row = row
+
+    if best_pre_final_row is None:
+        lines.append("  No pre-ANSWER result was available for a permutation control.")
     else:
-        r = best_before_final[1]
-        analysis = r["analysis"]
-        pair = r["pair"]
-        anchor = r["anchor"]
-        best_layer = int(r["best_layer"])
-        best_ba = float(r["best_balanced_accuracy"])
-        lines.append(f"  Strongest pre-final result: analysis={analysis}, pair={pair}, anchor={ANCHOR_DISPLAY[anchor]}, BA {best_ba:.3f} @ layer {best_layer}")
-        permutation_header_done = False
-        # Run permutations at best_layer only, inside main, below.
-
-    if not args.skip_permutation and best_before_final is not None:
-        r = best_before_final[1]
-        analysis = r["analysis"]
-        pair = r["pair"]
-        anchor = r["anchor"]
-        best_layer = int(r["best_layer"])
-        real_ba = float(r["best_balanced_accuracy"])
-        spec_obj = {
-            "analysis": analysis,
-            "pair_name": pair,
-            "anchor": anchor,
-        }
-        if analysis == "within_condition":
-            spec_obj["source_condition"] = pair
-            spec_obj["target_condition"] = pair
-        elif analysis == "cross_condition":
-            # pair format is s_to_t
-            s, t = pair.split("_to_", 1)
-            spec_obj["source_condition"] = s
-            spec_obj["target_condition"] = t
-        else:
-            spec_obj["source_condition"] = None
-            spec_obj["target_condition"] = None
-        keys = [k for k in deltas.keys() if filter_keys(spec_obj, k)]
-        keys.sort()
-        X_list: List[np.ndarray] = []
-        y_list: List[int] = []
-        groups_list: List[str] = []
-        for k in keys:
-            meta = metadata[k]
-            lab = meta.get("harmful_label_primary")
-            if lab is None:
-                continue
-            X_list.append(deltas[k])
-            y_list.append(int(lab))
-            groups_list.append(meta["family_id"])
-        if X_list:
-            tensor = np.stack(X_list, axis=0)
-            X = tensor[:, best_layer, :]
-            y = np.asarray(y_list, dtype=np.int64)
-            groups = np.asarray(groups_list, dtype=object)
-            logo = LeaveOneGroupOut()
-            folds = list(logo.split(np.arange(len(X)), y, groups=groups))
-            def evaluate_with_permutation(permute: bool, seed: int) -> float:
-                y_true_all = []
-                y_pred_all = []
-                master_rng = np.random.default_rng(seed) if permute else None
-                for fid, (train_idx, test_idx) in enumerate(folds):
-                    train_x = X[train_idx]
-                    test_x = X[test_idx]
-                    train_y = y[train_idx].copy()
-                    test_y = y[test_idx]
-                    if permute and master_rng is not None:
-                        rng = np.random.default_rng(int(master_rng.integers(0, 2**60)))
-                        train_y = rng.permutation(train_y)
-                    scaler = StandardScaler()
-                    train_x = scaler.fit_transform(train_x)
-                    test_x = scaler.transform(test_x)
-                    model = LogisticRegression(
-                        penalty="l2",
-                        class_weight="balanced",
-                        max_iter=10000,
-                        C=1.0,
-                    )
-                    try:
-                        model.fit(train_x, train_y)
-                        prob = model.predict_proba(test_x)[:, 1]
-                        pred = (prob >= 0.5).astype(np.int64)
-                    except Exception:
-                        pred = np.zeros(len(test_x), dtype=np.int64)
-                    y_true_all.append(test_y)
-                    y_pred_all.append(pred)
-                yt = np.concatenate(y_true_all)
-                yp = np.concatenate(y_pred_all)
-                return float(balanced_accuracy_score(yt, yp))
-            perm_values: List[float] = []
-            master_seed = int(np.random.default_rng(137).integers(0, 2**60))
+        analysis = str(best_pre_final_row["analysis"])
+        pair = str(best_pre_final_row["pair"])
+        anchor = str(best_pre_final_row["anchor"])
+        best_layer = int(best_pre_final_row["best_layer"])
+        real_ba = float(best_pre_final_row["best_balanced_accuracy"])
+        lines.append(
+            f"  Strongest pre-ANSWER result: analysis={analysis}, pair={pair}, anchor={ANCHOR_DISPLAY[anchor]}, BA {real_ba:.3f} @ layer {best_layer}"
+        )
+        if not args.skip_permutation:
+            permutation_values: List[float] = []
+            # #region debug-point E:permutation-entry
+            _debug_post(
+                "pre-fix",
+                "E",
+                "probe6.main",
+                "[DEBUG] Starting permutation control for strongest pre-answer result",
+                {
+                    "analysis": analysis,
+                    "pair": pair,
+                    "anchor": anchor,
+                    "best_layer": best_layer,
+                    "real_ba": real_ba,
+                    "permutation_pairs": args.permutation_pairs,
+                },
+            )
+            # #endregion
             for rep in range(args.permutation_pairs):
-                val = evaluate_with_permutation(True, master_seed + rep)
-                perm_values.append(val)
-                if (rep + 1) % max(1, args.permutation_pairs // 5) == 0 or (rep + 1) == args.permutation_pairs:
-                    print(json.dumps({
-                        "status": "permutation_progress",
-                        "repeat": rep + 1,
-                        "total": args.permutation_pairs,
-                    }), flush=True)
-            perm_mean = float(np.mean(perm_values))
-            perm_p95 = percentile(perm_values, 95.0)
-            p_count = sum(1 for v in perm_values if v >= real_ba)
-            emp_p = (p_count + 1) / (len(perm_values) + 1)
-            exceeds = real_ba > perm_p95
-            lines.append(f"  Permutation control (N={args.permutation_pairs}, training-label shuffle within each leave-one-family-out fold, fixed best layer {best_layer}):")
-            lines.append(f"    permutation mean BA: {perm_mean:.3f}")
-            lines.append(f"    permutation 95th percentile BA: {perm_p95:.3f}")
-            lines.append(f"    empirical p-value: {emp_p:.4f}")
-            lines.append(f"    real BA exceeds perm p95: {'YES' if exceeds else 'NO'}")
-            lines.append(f"  Conclusion: {'SURVIVES' if exceeds else 'FAILS'} the permutation control.")
+                permute_seed = 137_000 + rep
+                if analysis in {"overall_harmful", "within_condition"}:
+                    if analysis == "overall_harmful":
+                        keys = sorted(
+                            key
+                            for key, meta in metadata.items()
+                            if meta["anchor"] == anchor and meta["condition"] in CONDITIONS and meta["harmful_label_primary"] is not None
+                        )
+                    else:
+                        keys = sorted(
+                            key
+                            for key, meta in metadata.items()
+                            if meta["anchor"] == anchor and meta["condition"] == pair and meta["harmful_label_primary"] is not None
+                        )
+                    tensor = np.stack([deltas[key] for key in keys], axis=0)
+                    y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in keys], dtype=np.int64)
+                    groups = np.asarray([str(metadata[key]["family_id"]) for key in keys], dtype=object)
+                    perm_rows = run_family_heldout_classification(
+                        keys,
+                        tensor,
+                        y,
+                        groups,
+                        layer_count,
+                        permute_seed=permute_seed,
+                        restrict_layers={best_layer},
+                    )
+                else:
+                    source_condition, target_condition = pair.split("_to_", 1)
+                    source_keys = sorted(
+                        key
+                        for key, meta in metadata.items()
+                        if meta["anchor"] == anchor
+                        and meta["condition"] == source_condition
+                        and meta["harmful_label_primary"] is not None
+                    )
+                    target_keys = sorted(
+                        key
+                        for key, meta in metadata.items()
+                        if meta["anchor"] == anchor
+                        and meta["condition"] == target_condition
+                        and meta["harmful_label_primary"] is not None
+                    )
+                    source_tensor = np.stack([deltas[key] for key in source_keys], axis=0)
+                    source_y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in source_keys], dtype=np.int64)
+                    source_groups = np.asarray([str(metadata[key]["family_id"]) for key in source_keys], dtype=object)
+                    target_tensor = np.stack([deltas[key] for key in target_keys], axis=0)
+                    target_y = np.asarray([int(metadata[key]["harmful_label_primary"]) for key in target_keys], dtype=np.int64)
+                    target_groups = np.asarray([str(metadata[key]["family_id"]) for key in target_keys], dtype=object)
+                    perm_rows = run_cross_condition_transfer(
+                        source_keys,
+                        source_tensor,
+                        source_y,
+                        source_groups,
+                        target_keys,
+                        target_tensor,
+                        target_y,
+                        target_groups,
+                        layer_count,
+                        permute_seed=permute_seed,
+                        restrict_layers={best_layer},
+                    )
+                if perm_rows:
+                    permutation_values.append(float(perm_rows[0]["balanced_accuracy"]))
+            if permutation_values:
+                perm_mean = float(np.mean(permutation_values))
+                perm_p95 = percentile(permutation_values, 95.0)
+                empirical_p = (sum(1 for value in permutation_values if value >= real_ba) + 1) / (len(permutation_values) + 1)
+                survives = real_ba > perm_p95
+                lines.append(f"  Permutation mean BA: {perm_mean:.3f}")
+                lines.append(f"  Permutation 95th percentile BA: {perm_p95:.3f}")
+                lines.append(f"  Empirical p-value: {empirical_p:.4f}")
+                lines.append(f"  Survives permutation control: {'YES' if survives else 'NO'}")
+            else:
+                lines.append("  Permutation control could not be evaluated for this result.")
 
-    output_summary.parent.mkdir(parents=True, exist_ok=True)
     output_summary.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "status": "done",
-        "output_layerwise": str(output_layerwise),
-        "output_summary": str(output_summary),
-        "output_best": str(output_best),
-    }), flush=True)
+    print(
+        json.dumps(
+            {
+                "status": "done",
+                "output_layerwise": str(output_layerwise),
+                "output_summary": str(output_summary),
+                "output_best": str(output_best),
+            }
+        ),
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

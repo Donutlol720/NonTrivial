@@ -30,6 +30,13 @@ ANCHOR_KEYS_REQUIRED = [
 ]
 
 
+def default_python_executable() -> str:
+    bundled = REPO_ROOT / ".venv_qwen4b" / "Scripts" / "python.exe"
+    if bundled.exists():
+        return str(bundled)
+    return sys.executable
+
+
 def read_jsonl(path: Path) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     with path.open("r", encoding="utf-8") as f:
@@ -194,7 +201,7 @@ def main() -> None:
     parser.add_argument("--prompt-dataset", default=str(REPO_ROOT / "data" / "generated_prompts_v1.jsonl"))
     parser.add_argument("--model", default="Qwen/Qwen3-4B-Instruct-2507")
     parser.add_argument("--activation-output-root", default=str(REPO_ROOT / "activations" / "qwen3_4b_instruct_2507_early_positions"))
-    parser.add_argument("--python-exe", default=str(REPO_ROOT / ".venv_qwen4b" / "Scripts" / "python.exe"))
+    parser.add_argument("--python-exe", default=default_python_executable())
     parser.add_argument("--hf-home", default=str(REPO_ROOT / "model_cache"))
     parser.add_argument("--hf-token", default="", help="Optional: if set, overwrites env HF_TOKEN for subprocess workers.")
     parser.add_argument("--batch-size", type=int, default=4, help="Extractions per worker subprocess. Smaller = lower peak memory but slower.")
@@ -204,6 +211,15 @@ def main() -> None:
     parser.add_argument("--skip-permutation", action="store_true", help="Pass through to probe6 final classification.")
     parser.add_argument("--permutation-pairs", type=int, default=100, help="Pass through to probe6 final classification.")
     args = parser.parse_args()
+
+    for required_path, purpose, hint in [
+        (Path(args.input), "state/logit extraction JSONL", "Run src/extraction/extract_multi_family_states_and_logits.py first."),
+        (Path(args.family_deltas), "family delta CSV", "Run src/analysis/compute_qwen3_4b_family36_family_margin_deltas.py after extraction."),
+        (Path(args.prompt_dataset), "prompt dataset JSONL", "The repo should already contain data/generated_prompts_v1.jsonl."),
+    ]:
+        path = required_path if required_path.is_absolute() else (REPO_ROOT / required_path).resolve()
+        if not path.exists():
+            raise FileNotFoundError(f"Missing {purpose}: {path}\n{hint}")
 
     Path(args.activation_output_root).mkdir(parents=True, exist_ok=True)
 
