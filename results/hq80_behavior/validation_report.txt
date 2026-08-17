@@ -1,0 +1,24 @@
+HQ80 Qwen Behavioral Analysis — Validation Report
+============================================================
+[PASS] 1a rows len == 640 exactly
+       Found 640 rows
+[PASS] 1b unique family_id == 80
+       Found 80 unique families
+[PASS] 1c each family has exactly 8 rows with expected conditions
+       Checked 80 families
+[PASS] 1d no closed_context in condition column
+       Found 0 rows with closed_context in condition
+[PASS] 1e every row has required keys
+       Checked 640 rows
+[PASS] 1f correct_choice in {A,B}, false_choice in {A,B}, correct != false
+       Checked 640 rows
+[PASS] 1g answer choices single-token-compatible (tokenizer check)
+       Strategy=leading_space, idA=362, idB=425
+[PASS] 1h correct-answer balance (warn if outside 35-45)
+       correct_choice A: 40, B: 40
+[PASS] 1i within-family matched-prefix integrity
+       Checked 80 families
+[PASS] 1j prompt_id uniqueness (640 unique)
+       Found 640 unique prompt_ids out of 640 rows
+============================================================
+Overall: ALL CHECKS PASSED

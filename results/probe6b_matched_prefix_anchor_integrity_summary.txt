@@ -1,0 +1,81 @@
+Probe 6B matched-prefix anchor integrity summary
+
+Families: 36
+Conditions included: evidence_neutral, evidence_false_belief_pressure, evidence_emotional_pressure, evidence_true_belief_pressure, evidence_distractor_neutral, closed_context_false_belief_pressure
+
+== Raw prefix identity through shared anchors ==
+- evidence_false_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_false_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_false_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+
+== Token prefix identity through shared anchors ==
+- evidence_false_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_false_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_false_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_emotional_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- closed_context_false_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_distractor_neutral @ S2: end of answer choices: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S0: end of evidence block: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S1: end of question block: 36/36 identical (100.0%)
+- evidence_true_belief_pressure @ S2: end of answer choices: 36/36 identical (100.0%)
+
+== Condition-neutral delta norms at shared anchors ==
+- evidence_false_belief_pressure
+  S0: end of evidence block: mean range 0.000000..0.283996, max range 0.000000..1.040142
+    Top mean-norm layers: L34 mean=0.283996, L33 mean=0.236304, L32 mean=0.214670
+  S1: end of question block: mean range 0.000011..0.314460, max range 0.000379..1.202740
+    Top mean-norm layers: L34 mean=0.314460, L33 mean=0.263504, L32 mean=0.232846
+  S2: end of answer choices: mean range 0.000000..0.323137, max range 0.000000..1.269746
+    Top mean-norm layers: L34 mean=0.323137, L33 mean=0.267589, L32 mean=0.231161
+- evidence_emotional_pressure
+  S0: end of evidence block: mean range 0.000000..0.388319, max range 0.000000..1.041652
+    Top mean-norm layers: L34 mean=0.388319, L33 mean=0.326895, L32 mean=0.294831
+  S1: end of question block: mean range 0.000011..0.436146, max range 0.000379..1.204764
+    Top mean-norm layers: L34 mean=0.436146, L33 mean=0.366076, L32 mean=0.320341
+  S2: end of answer choices: mean range 0.000000..0.436888, max range 0.000000..1.269746
+    Top mean-norm layers: L34 mean=0.436888, L33 mean=0.360586, L32 mean=0.309527
+- closed_context_false_belief_pressure
+  S0: end of evidence block: mean range 0.000000..0.361441, max range 0.000000..1.041652
+    Top mean-norm layers: L34 mean=0.361441, L33 mean=0.302727, L32 mean=0.272071
+  S1: end of question block: mean range 0.000011..0.407243, max range 0.000379..1.204764
+    Top mean-norm layers: L34 mean=0.407243, L33 mean=0.342765, L32 mean=0.300490
+  S2: end of answer choices: mean range 0.000000..0.407805, max range 0.000000..1.269746
+    Top mean-norm layers: L34 mean=0.407805, L33 mean=0.336915, L32 mean=0.289586
+- evidence_distractor_neutral
+  S0: end of evidence block: mean range 0.000000..0.408467, max range 0.000000..1.041652
+    Top mean-norm layers: L34 mean=0.408467, L33 mean=0.343342, L32 mean=0.307797
+  S1: end of question block: mean range 0.000023..0.462977, max range 0.000440..1.204764
+    Top mean-norm layers: L34 mean=0.462977, L33 mean=0.389841, L32 mean=0.340432
+  S2: end of answer choices: mean range 0.000000..0.469164, max range 0.000000..1.269746
+    Top mean-norm layers: L34 mean=0.469164, L33 mean=0.387060, L32 mean=0.332522
+- evidence_true_belief_pressure
+  S0: end of evidence block: mean range 0.000000..0.283996, max range 0.000000..1.040142
+    Top mean-norm layers: L34 mean=0.283996, L33 mean=0.236304, L32 mean=0.214670
+  S1: end of question block: mean range 0.000011..0.314460, max range 0.000379..1.202740
+    Top mean-norm layers: L34 mean=0.314460, L33 mean=0.263504, L32 mean=0.232846
+  S2: end of answer choices: mean range 0.000000..0.323137, max range 0.000000..1.269746
+    Top mean-norm layers: L34 mean=0.323137, L33 mean=0.267589, L32 mean=0.231161
+
+== Manual inspection ==
+Anchor windows for 4 examples per condition are in results/probe6b_matched_prefix_anchor_integrity_examples.txt.
+
+- Shared-prefix integrity passed: raw prefixes match at S0/S1/S2 for every tested condition.
+- Token-prefix integrity passed: token prefixes match at S0/S1/S2 for every tested condition.

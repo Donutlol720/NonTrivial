@@ -1,0 +1,71 @@
+=== Dataset / Anchor Integrity Checks ===
+families: 80
+conditions_per_family: 8
+total_prompts: 640
+correct_choice_balance: A=40, B=40
+
+Raw prefix identity through each shared anchor (vs neutral, 80 families per non-neutral condition):
+  S0: end of evidence block:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+  S1: end of question block:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+  S2: end of answer choices:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+
+Token prefix identity through each shared anchor (vs neutral):
+  S0: end of evidence block:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+  S1: end of question block:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+  S2: end of answer choices:
+    evidence_neutral: matched 80/80
+    evidence_false_belief_pressure: matched 80/80
+    evidence_false_rationale_pressure: matched 80/80
+    evidence_emotional_pressure: matched 80/80
+    evidence_authority_pressure: matched 80/80
+    evidence_true_belief_pressure: matched 80/80
+    evidence_true_rationale_pressure: matched 80/80
+    evidence_distractor_neutral: matched 80/80
+
+Shared-anchor hidden-state delta norms (condition vs neutral; max over families and layers):
+  S0: end of evidence block: max ||delta||_2 = 0.000000e+00; families above 1e-04 = 0
+  S1: end of question block: max ||delta||_2 = 0.000000e+00; families above 1e-04 = 0
+  S2: end of answer choices: max ||delta||_2 = 0.000000e+00; families above 1e-04 = 0
+
+VALIDATION STATUS: PASSED.
+

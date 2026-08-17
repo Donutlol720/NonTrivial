@@ -1,0 +1,85 @@
+condition,condition_label,subset_type,patch_type,layer,n,orig_wrong_count,rescued_flip_count,wrong_direction_flip_count,orig_correct_neutral_count,degraded_transfer_flip_count
+closed_context_false_belief_pressure,Closed-Context,control,rescue,8,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,20,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,28,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,30,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,32,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,34,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,rescue,35,7,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,8,12,1.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,20,12,1.0,1.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,28,12,1.0,1.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,30,12,1.0,1.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,32,12,1.0,1.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,34,12,1.0,1.0,0,,
+closed_context_false_belief_pressure,Closed-Context,degraded,rescue,35,12,1.0,1.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,8,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,20,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,28,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,30,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,32,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,34,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,control,rescue,35,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,8,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,20,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,28,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,30,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,32,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,34,12,0.0,0.0,0,,
+evidence_emotional_pressure,Emotional,degraded,rescue,35,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,8,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,20,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,28,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,30,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,32,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,34,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,control,rescue,35,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,8,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,20,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,28,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,30,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,32,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,34,12,0.0,0.0,0,,
+evidence_false_belief_pressure,False Belief,degraded,rescue,35,12,0.0,0.0,0,,
+closed_context_false_belief_pressure,Closed-Context,control,transfer,8,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,20,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,28,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,30,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,32,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,34,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,control,transfer,35,7,,,0,7.0,0.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,8,12,,,0,12.0,0.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,20,12,,,0,12.0,0.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,28,12,,,0,12.0,1.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,30,12,,,0,12.0,1.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,32,12,,,0,12.0,1.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,34,12,,,0,12.0,1.0
+closed_context_false_belief_pressure,Closed-Context,degraded,transfer,35,12,,,0,12.0,1.0
+evidence_emotional_pressure,Emotional,control,transfer,8,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,20,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,28,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,30,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,32,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,34,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,control,transfer,35,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,8,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,20,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,28,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,30,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,32,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,34,12,,,0,12.0,0.0
+evidence_emotional_pressure,Emotional,degraded,transfer,35,12,,,0,12.0,1.0
+evidence_false_belief_pressure,False Belief,control,transfer,8,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,20,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,28,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,30,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,32,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,34,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,control,transfer,35,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,8,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,20,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,28,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,30,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,32,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,34,12,,,0,12.0,0.0
+evidence_false_belief_pressure,False Belief,degraded,transfer,35,12,,,0,12.0,0.0

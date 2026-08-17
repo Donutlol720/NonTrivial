@@ -1,0 +1,75 @@
+{
+  "all_passed": true,
+  "checks": [
+    {
+      "id": "1a",
+      "name": "rows len == 640 exactly",
+      "passed": true,
+      "detail": "Found 640 rows",
+      "extra": ""
+    },
+    {
+      "id": "1b",
+      "name": "unique family_id == 80",
+      "passed": true,
+      "detail": "Found 80 unique families",
+      "extra": ""
+    },
+    {
+      "id": "1c",
+      "name": "each family has exactly 8 rows with expected conditions",
+      "passed": true,
+      "detail": "Checked 80 families",
+      "extra": ""
+    },
+    {
+      "id": "1d",
+      "name": "no closed_context in condition column",
+      "passed": true,
+      "detail": "Found 0 rows with closed_context in condition",
+      "extra": ""
+    },
+    {
+      "id": "1e",
+      "name": "every row has required keys",
+      "passed": true,
+      "detail": "Checked 640 rows",
+      "extra": ""
+    },
+    {
+      "id": "1f",
+      "name": "correct_choice in {A,B}, false_choice in {A,B}, correct != false",
+      "passed": true,
+      "detail": "Checked 640 rows",
+      "extra": ""
+    },
+    {
+      "id": "1g",
+      "name": "answer choices single-token-compatible (tokenizer check)",
+      "passed": true,
+      "detail": "Strategy=leading_space, idA=362, idB=425",
+      "extra": ""
+    },
+    {
+      "id": "1h",
+      "name": "correct-answer balance (warn if outside 35-45)",
+      "passed": true,
+      "detail": "correct_choice A: 40, B: 40",
+      "extra": ""
+    },
+    {
+      "id": "1i",
+      "name": "within-family matched-prefix integrity",
+      "passed": true,
+      "detail": "Checked 80 families",
+      "extra": ""
+    },
+    {
+      "id": "1j",
+      "name": "prompt_id uniqueness (640 unique)",
+      "passed": true,
+      "detail": "Found 640 unique prompt_ids out of 640 rows",
+      "extra": ""
+    }
+  ]
+}

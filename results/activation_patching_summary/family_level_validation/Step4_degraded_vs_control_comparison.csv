@@ -1,0 +1,3 @@
+patch_type,metric,degraded_mean_expected_signed,control_mean_expected_signed,degraded_minus_control_expected_signed,MWU_one_sided_greater_pvalue,diff_bootstrap_ci_lo,diff_bootstrap_ci_hi,cohens_d_expected_signed,degraded_n,control_n
+rescue,expected_signed_effect (rescue:+patch; transfer:-patch),2.046816822222222,-0.9060640903225807,2.952880912544803,1.1660944049270775e-11,2.2902239846460573,3.692058320721326,1.9469772413117217,36,31
+transfer,expected_signed_effect (rescue:+patch; transfer:-patch),4.127411322222222,1.745352412903226,2.382058909318996,1.9463819141108722e-11,1.8349140450716837,2.9944266948611107,1.9188993955504348,36,31
