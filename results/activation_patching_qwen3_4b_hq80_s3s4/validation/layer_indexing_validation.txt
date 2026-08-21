@@ -1,0 +1,15 @@
+Layer indexing validation — hook vs output_hidden_states
+========================================================================
+timestamp = 2026-08-19T18:38:29+00:00
+model     = Qwen/Qwen3-4B-Instruct-2507
+Convention: hook(model.model.layers[L]) output should equal output_hidden_states[L+1] at a specific token position.
+block_list_name = model.layers  n_blocks = 36
+prompt tokenized len = 134, validated position = 133 (final)
+output_hidden_states tuple length = 37  (expected = 1 (embeds) + 36 (blocks) = 37)
+L=28:  max_abs_diff(hidden_states[L+1], hook_capture) = 0.00e+00  match=True
+L=32:  max_abs_diff(hidden_states[L+1], hook_capture) = 0.00e+00  match=True
+L=34:  max_abs_diff(hidden_states[L+1], hook_capture) = 0.00e+00  match=True
+logits max_abs_diff (ref vs hook-run) = 0.00e+00
+
+mismatches (if any): []
+RESULT: PASS

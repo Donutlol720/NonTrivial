@@ -1,0 +1,14 @@
+Qwen HQ80 S3/S4 activation patching — answer token validation
+========================================================================
+timestamp           = 2026-08-18T06:46:50+00:00
+tokenizer source    = Qwen/Qwen3-4B-Instruct-2507
+selection strategy  = leading_space
+
+id_A = 362  decode = ' A'  len(tokens) = 1 (required)
+id_B = 425  decode = ' B'  len(tokens) = 1 (required)
+
+Round-trip re-encode ' A' : ids=[362] (expected single id 362)
+Round-trip re-encode ' B' : ids=[425] (expected single id 425)
+
+leading_space single-token OK = True
+strategy_used = leading_space

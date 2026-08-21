@@ -1,0 +1,18 @@
+Discovered data / output paths:
+============================================================
+  PROMPT_JSONL                   = /Users/ericmin/NonTrivial/prompts/expanded_matched_prefix_hq80_v1.jsonl
+  BEHAVIOR_CSV                   = /Users/ericmin/NonTrivial/results/hq80_behavior/qwen_hq80_prompt_level_logits.csv
+  ANCHOR_MANIFEST_CSV            = /Users/ericmin/NonTrivial/results/hq80_hidden/qwen_hq80_anchor_manifest.csv
+  OUT_DIR                        = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4
+  RAW_CSV                        = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/hq80_s3s4_activation_patching_raw.csv
+  RANDOM_FAMILY_CSV              = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/random_family_patching_raw.csv
+  SELF_PATCH_CSV                 = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/self_patch_control.csv
+  UNPATCHED_REPRO_CSV            = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/unpatched_margin_reproduction.csv
+  ANCHOR_VAL_CSV                 = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/anchor_validation.csv
+  ANCHOR_VAL_SAMPLES_MD          = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/anchor_validation_samples.md
+  TOKEN_VAL_TXT                  = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/token_validation.txt
+  LAYER_IDX_TXT                  = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/validation/layer_indexing_validation.txt
+  FAMILY_LEVEL_CSV               = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/summaries/hq80_s3s4_family_level_patch_effects.csv
+  CACHE_DIR                      = /Users/ericmin/NonTrivial/results/activation_patching_qwen3_4b_hq80_s3s4/cached_activations
+
+time = 2026-08-18T06:45:43+00:00
